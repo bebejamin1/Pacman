@@ -2,7 +2,7 @@
 #     Variables     #
 # ----------------- #
 
-PYTHON=uv run python
+PYTHON=python3
 
 FLAKE8=uv run flake8
 MYPY=uv run mypy
@@ -36,7 +36,7 @@ install:
 run:
 	@clear
 	@echo "$(BLUE)Running the project...$(END)"
-	$(PYTHON) -m src
+	$(PYTHON) pac-man.py config.json
 
 
 debug:

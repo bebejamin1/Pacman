@@ -1,3 +1,4 @@
+
 import json
 import os
 
@@ -13,7 +14,7 @@ def parse_conf(path: str) -> list:
 
     os.system("clear")
 
-    checks = {
+    checks = {  # a voir avec noemie pour les maxs
         "live": 2000, "pacgum_points": 2000, "super_pacgum_points": 2000,
         "ghost_points": 2000, "level_max_time": 2000
              }
@@ -40,13 +41,16 @@ def parse_conf(path: str) -> list:
             raise ValueError("The number of arguments in the JSON file "
                              "does not match")
 
-        if not (conf.get("highscore_filename")):
+        if not (conf.get("highscore_filename")
+                or isinstance(conf["highscore_filename"], str)):
             raise ValueError("highscore_filename It is required for the game")
 
         if (not conf["highscore_filename"].endswith(".json")):
             raise ValueError("The leaderboard must be in JSON format.")
 
         path_leaderbord = conf["highscore_filename"]
+        if not (path_leaderbord.startswith("data/")):
+            path_leaderbord = f"/data{path_leaderbord}"
 
         if (not conf.get("seed") or len(conf.get("seed")) < 1):
             raise ValueError("The seed in the JSON conf is not set "
@@ -84,7 +88,7 @@ def parse_conf(path: str) -> list:
                                  "`name`, `width`, and `height`.")
 
     except (ValueError) as e:
-        print("\n" + f"{r}[ERROR]{rs}:", e, "\n")
+        print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
         exit()
 
     except TypeError as e:
@@ -98,11 +102,69 @@ def parse_conf(path: str) -> list:
 # *                          PARSE LEADERBORD                                 *
 # *                                                                           *
 
-def parse_leadbord(path: str) -> dict:
-    pass
+def parse_leaderbord(path: str) -> dict:
+    try:
+        if not (path.endswith(".json")):
+            raise ValueError("The leaderboard must be a .json file.")
+
+        os.makedirs(path[:path.rfind("/")], exist_ok=True)
+        if not (os.path.exists(path)):
+            raise FileNotFoundError
+
+        else:
+            with open(path, "r") as f:
+                leaderbord = json.load(f)
+
+    except (FileNotFoundError, json.JSONDecodeError,
+            ValueError, PermissionError):
+        with open(path, "w") as f:
+            json.dump(default_leaderbord, f, indent=2)
+        leaderbord = default_leaderbord
+
+    try:
+        if (leaderbord.get("scores") is None or len(leaderbord) != 1):
+            raise ValueError("The leaderboard should be prototyped as follows:"
+                             "\n" + f"{default_leaderbord}")
+
+        for p in leaderbord["scores"]:
+
+            if (len(p) != 2 or
+                    not p.get("player_name") or not p.get("player_score")):
+                raise ValueError("The leaderboard JSON file must contain only"
+                                 "\n" + "player_name: str," + "\n"
+                                 "player_score: int")
+
+            name = p["player_name"]
+            if (len(name) > 10):
+                error = ("The player's name must be less than "
+                         "10 characters long and consist only of "
+                         "alphanumeric and/or numeric characters, "
+                         "including spaces. --> " + f"{name}")
+                raise ValueError(error)
+
+            for c in name:
+                if not (c.isdigit() or c.isalpha() or c.isspace()):
+                    raise ValueError(error)
+
+            score = p["player_score"]
+            if (score < 0 or score > 2147483647):
+                raise ValueError("The score must be greater than 0 and must "
+                                 "not exceed 2147483647.")
+
+    except ValueError as e:
+        print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
+        exit()
+
+    leaderbord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
+    with open(path, "w") as f:
+        json.dump(leaderbord, f, indent=2)
+
+    return (leaderbord)
 
 
 # *                              ASSETS                                       *
+
+default_leaderbord = {"scores": []}
 
 default_conf = {
     "highscore_filename": "data/leaderboard.json",
@@ -111,7 +173,7 @@ default_conf = {
     "super_pacgum_points": 50,
     "ghost_points": 200,
     "seed": "nono",
-    "level_max_time": 180.0,
+    "level_max_time": 90,
     "level": [
         {
             "name": "Level 1",
