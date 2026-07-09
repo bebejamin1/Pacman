@@ -54,9 +54,6 @@ def parse_conf(path: str) -> list:
 
         for k, v in checks.items():
 
-            if (not isinstance(k, int)):
-                raise ValueError(f"The value of {k} must be an integer")
-
             if not (conf.get(k)):
                 raise ValueError(f"The JSON config does not contain {k}")
 
@@ -77,15 +74,22 @@ def parse_conf(path: str) -> list:
             if (not lvl.get("width") or not lvl.get("height") or
                     lvl["width"] <= 0 or lvl["width"] > max_width or
                     lvl["height"] <= 0 or lvl["height"] > max_height):
-                raise ValueError("")
+                raise ValueError("The maximum values must fall within the "
+                                 "following ranges:" + "\n"
+                                 f"width: > 0 and < {max_width}" + "\n"
+                                 f"height: > 0 and < {max_height}")
 
             if (len(lvl) != 3):
                 raise ValueError("The parameters in `level` must be only "
                                  "`name`, `width`, and `height`.")
 
-    except (ValueError, TypeError) as e:
+    except (ValueError) as e:
         print("\n" + f"{r}[ERROR]{rs}:", e, "\n")
         exit()
+
+    except TypeError as e:
+        print("\n" + f"{r}[ERROR]{rs}:" +
+              "The data types do not match" + "\n" + f"{e}")
 
     return [path_leaderbord, conf]
 
