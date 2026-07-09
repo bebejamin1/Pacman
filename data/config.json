@@ -1,0 +1,61 @@
+{
+  "highscore_filename": "data/leaderboard.json",
+  "live": 3,
+  "pacgum_points": 10,
+  "super_pacgum_points": 50,
+  "ghost_points": 200,
+  "seed": "nono",
+  "level_max_time": 180.0,
+  "level": [
+    {
+      "name": "Level 1",
+      "width": 12,
+      "height": 10
+    },
+    {
+      "name": "Level 2",
+      "width": 18,
+      "height": 12
+    },
+    {
+      "name": "Level 3",
+      "width": 10,
+      "height": 10
+    },
+    {
+      "name": "Level 4",
+      "width": 10,
+      "height": 20
+    },
+    {
+      "name": "Level 5",
+      "width": 15,
+      "height": 21
+    },
+    {
+      "name": "Level 6",
+      "width": 14,
+      "height": 10
+    },
+    {
+      "name": "Level 7",
+      "width": 15,
+      "height": 10
+    },
+    {
+      "name": "Level 8",
+      "width": 12,
+      "height": 16
+    },
+    {
+      "name": "Level 9",
+      "width": 14,
+      "height": 10
+    },
+    {
+      "name": "Level 10",
+      "width": 20,
+      "height": 20
+    }
+  ]
+}
