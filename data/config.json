@@ -4,8 +4,8 @@
   "pacgum_points": 10,
   "super_pacgum_points": 50,
   "ghost_points": 200,
-  "seed": "nono",
-  "level_max_time": 180.0,
+  "seed": 42,
+  "level_max_time": 90,
   "level": [
     {
       "name": "Level 1",

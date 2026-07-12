@@ -18,6 +18,8 @@ def parse_conf(path: str) -> list:
         "live": 2000, "pacgum_points": 2000, "super_pacgum_points": 2000,
         "ghost_points": 2000, "level_max_time": 2000
              }
+    min_width = 3  # voir avec noemie
+    min_height = 3  # voir avec noemie
     max_width = 30  # voir avec noemie
     max_height = 30  # voir avec noemie
 
@@ -52,13 +54,15 @@ def parse_conf(path: str) -> list:
         if not (path_leaderbord.startswith("data/")):
             path_leaderbord = f"/data{path_leaderbord}"
 
-        if (not conf.get("seed") or len(conf.get("seed")) < 1):
+        if (not isinstance(conf.get("seed"), int)
+                or isinstance(conf.get("seed"), bool)
+                or conf["seed"] <= 0):
             raise ValueError("The seed in the JSON conf is not set "
                              "up correctly.")
 
         for k, v in checks.items():
 
-            if not (conf.get(k)):
+            if not (conf.get(k)):  # regarder si int
                 raise ValueError(f"The JSON config does not contain {k}")
 
             if (conf[k] <= 0 or conf[k] > v):
@@ -76,8 +80,8 @@ def parse_conf(path: str) -> list:
                                  "and its number must be in ascending order.")
 
             if (not lvl.get("width") or not lvl.get("height") or
-                    lvl["width"] <= 0 or lvl["width"] > max_width or
-                    lvl["height"] <= 0 or lvl["height"] > max_height):
+                    lvl["width"] <= min_width or lvl["width"] > max_width or
+                    lvl["height"] <= min_height or lvl["height"] > max_height):
                 raise ValueError("The maximum values must fall within the "
                                  "following ranges:" + "\n"
                                  f"width: > 0 and < {max_width}" + "\n"
@@ -172,7 +176,7 @@ default_conf = {
     "pacgum_points": 10,
     "super_pacgum_points": 50,
     "ghost_points": 200,
-    "seed": "nono",
+    "seed": 42,
     "level_max_time": 90,
     "level": [
         {
