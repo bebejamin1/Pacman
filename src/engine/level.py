@@ -1,4 +1,5 @@
 
+
 from enum import Enum
 
 from src.engine.algo import Cell
@@ -30,14 +31,17 @@ class Eaten(Enum):
 
 class Level:
     def __init__(self, maze: list[list[int]], number: int) -> None:
+
         self.maze = maze
         self.number = number
         self.height = len(maze)
         self.width = len(maze[0]) if maze else 0
         open_cells = {(x, y) for y in range(self.height)
                       for x in range(self.width) if maze[y][x] != SOLID}
-        if not open_cells:
+
+        if not (open_cells):
             raise ValueError("the maze has no walkable cell")
+
         self.corners = [self._closest(c, open_cells) for c in
                         ((0, 0), (self.width - 1, 0),
                          (0, self.height - 1),
@@ -51,11 +55,14 @@ class Level:
 # ================================= CAN MOVE ==================================
 
     def can_move(self, cell: Cell, direction: Cell) -> bool:
+
         bit = WALL_BITS.get(direction)
-        if bit is None:
+        if (bit is None):
             return False
+
         x, y = cell
         nx, ny = x + direction[0], y + direction[1]
+
         return (0 <= nx < self.width and 0 <= ny < self.height
                 and not self.maze[y][x] & bit
                 and self.maze[ny][nx] != SOLID)
@@ -63,19 +70,22 @@ class Level:
 # ==================================== EAT ====================================
 
     def eat(self, cell: Cell) -> Eaten:
-        if cell in self.pacgums:
+
+        if (cell in self.pacgums):
             self.pacgums.remove(cell)
             return Eaten.PACGUM
-        if cell in self.super_pacgums:
+
+        if (cell in self.super_pacgums):
             self.super_pacgums.remove(cell)
-            return Eaten.SUPER
-        return Eaten.NOTHING
+            return (Eaten.SUPER)
+
+        return (Eaten.NOTHING)
 
 # ================================== CLEARED ==================================
 
     @property
     def cleared(self) -> bool:
-        return not self.pacgums and not self.super_pacgums
+        return (not self.pacgums and not self.super_pacgums)
 
 # ================================== CLOSEST ==================================
 
