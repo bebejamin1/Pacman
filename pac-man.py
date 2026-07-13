@@ -1,0 +1,31 @@
+
+
+# python3 pac-man.py config.json
+
+import sys
+
+rs = "\033[0m"
+r = "\033[31m\033[5m\033[1m"
+
+
+def main() -> None:
+    if (len(sys.argv) != 2):
+        print("\n" + f"{r}[ERROR]{rs}: Execute using this structure:" + "\n"
+              "python3 pac-man.py config.json" + "\n")
+        return
+
+    try:
+        # from src.visuel_place_holder.visual import play
+        from src.renderer.ui.menu_screen import start_game
+    except ModuleNotFoundError as e:
+        print("\n" + f"{r}[ERROR]{rs}: missing dependency ({e.name})." + "\n"
+              "Run `make install` then `uv run python pac-man.py "
+              "config.json`" + "\n")
+        return
+
+    # play(f"data/{sys.argv[1]}")
+    start_game()
+
+
+if __name__ == "__main__":
+    main()

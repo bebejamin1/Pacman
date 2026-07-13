@@ -36,7 +36,7 @@ install:
 run:
 	@clear
 	@echo "$(BLUE)Running the project...$(END)"
-	$(PYTHON) -m src
+	$(PYTHON) pac-man.py config.json
 
 
 debug:

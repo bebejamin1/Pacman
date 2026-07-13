@@ -1,0 +1,3 @@
+import arcade
+
+class Enemies():

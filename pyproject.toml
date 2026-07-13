@@ -1,0 +1,18 @@
+[project]
+name = "pacman"
+version = "0.1.0"
+description = "Recreate the famous arcade game Pac-man! Noémie X Benjamin"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"arcade>=3.3.3",
+	"mazegenerator",
+	"uv>=0.11.28",
+]
+
+[[tool.mypy.overrides]]
+module = "mazegen.*"
+ignore_errors = true
+
+[tool.uv.sources]
+mazegenerator = { path = "src/maze/mazegenerator-2.1.0-py3-none-any.whl" }
