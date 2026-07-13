@@ -2,7 +2,7 @@
 
 import json
 
-from src.parsing.parse import parse_conf, parse_leaderbord
+from src.parsing.parse import parse_conf, parse_leaderbord, strip_json_comments
 
 
 # *****************************************************************************
@@ -31,7 +31,7 @@ def delete_over_ten(leaderbord: dict) -> dict:
 def leaderbord_update(player_name: str, player_score: int) -> dict:
 
     with open(leaderbord_path, "r") as f:
-        bord = json.load(f)
+        bord = json.loads(strip_json_comments(f.read()))
 
     bord["scores"].append({
         "player_name": player_name,

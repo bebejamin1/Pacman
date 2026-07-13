@@ -2,9 +2,19 @@
 
 import json
 import os
+import re
 
 rs = "\033[0m"
 r = "\033[31m\033[5m\033[1m"
+
+
+# *****************************************************************************
+# *                         STIP JSON COMMENTS                                *
+# *                                                                           *
+
+def strip_json_comments(text: str) -> str:
+    pattern = r'"(?:\\.|[^"\\])*"|(//[^\n]*|#[^\n]*)'
+    return re.sub(pattern, lambda m: "" if m.group(1) else m.group(0), text)
 
 
 # *****************************************************************************
@@ -27,7 +37,7 @@ def parse_conf(path: str) -> list:
     try:
         try:
             with open(path, "r") as f:
-                conf = json.load(f)
+                conf = json.loads(strip_json_comments(f.read()))
 
         except FileNotFoundError:
             os.makedirs(path[:path.rfind("/")], exist_ok=True)
@@ -40,20 +50,16 @@ def parse_conf(path: str) -> list:
         exit()
 
     try:
-        if (len(conf) > 8):
-            raise ValueError("The number of arguments in the JSON file "
-                             "does not match")
 
-        if not (conf.get("highscore_filename")
-                or isinstance(conf["highscore_filename"], str)):
+        if not (conf.get("highscore_filename")):
             raise ValueError("highscore_filename It is required for the game")
 
-        if (not conf["highscore_filename"].endswith(".json")):
-            raise ValueError("The leaderboard must be in JSON format.")
-
         path_leaderbord = conf["highscore_filename"]
-        if not (path_leaderbord.startswith("data/")):
-            path_leaderbord = f"/data{path_leaderbord}"
+        if (not isinstance(path_leaderbord, str) or
+                not path_leaderbord.endswith(".json") or
+                len(path_leaderbord) == 0):
+            raise ValueError("The name of the leaderboard file is not "
+                             "configured correctly")
 
         if (not isinstance(conf.get("seed"), int)
                 or isinstance(conf.get("seed"), bool)
@@ -88,17 +94,18 @@ def parse_conf(path: str) -> list:
                                  f"width: > 0 and < {max_width}" + "\n"
                                  f"height: > 0 and < {max_height}")
 
-            if (len(lvl) != 3):
-                raise ValueError("The parameters in `level` must be only "
-                                 "`name`, `width`, and `height`.")
-
     except (ValueError) as e:
         print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
-        exit()
+        with open(path, "w") as f:
+            json.dump(default_conf, f, indent=2)
+        conf = default_conf
 
     except TypeError as e:
         print("\n" + f"{r}[ERROR]{rs}:" +
               "The data types do not match" + "\n" + f"{e}")
+        with open(path, "w") as f:
+            json.dump(default_conf, f, indent=2)
+        conf = default_conf
 
     return [path_leaderbord, conf]
 
@@ -118,7 +125,7 @@ def parse_leaderbord(path: str) -> dict:
 
         else:
             with open(path, "r") as f:
-                leaderbord = json.load(f)
+                leaderbord = json.loads(strip_json_comments(f.read()))
 
     except (FileNotFoundError, json.JSONDecodeError,
             ValueError, PermissionError):
@@ -158,7 +165,9 @@ def parse_leaderbord(path: str) -> dict:
 
     except ValueError as e:
         print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
-        exit()
+        with open(path, "w") as f:
+            json.dump(default_leaderbord, f, indent=2)
+        leaderbord = default_leaderbord
 
     leaderbord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
     with open(path, "w") as f:
@@ -169,7 +178,7 @@ def parse_leaderbord(path: str) -> dict:
 
 # *                              ASSETS                                       *
 
-default_leaderbord = {"scores": []}
+default_leaderbord: dict[str, list] = {"scores": []}
 
 default_conf = {
     "highscore_filename": "data/leaderboard.json",
