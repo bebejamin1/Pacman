@@ -16,7 +16,7 @@ def main() -> None:
 
     try:
         # from src.visuel_place_holder.visual import play
-        from src.renderer.ui.menu_screen import start_game
+        from src.renderer.game_engine import GameEngine
     except ModuleNotFoundError as e:
         print("\n" + f"{r}[ERROR]{rs}: missing dependency ({e.name})." + "\n"
               "Run `make install` then `uv run python pac-man.py "
@@ -24,7 +24,12 @@ def main() -> None:
         return
 
     # play(f"data/{sys.argv[1]}")
-    start_game()
+    # Loads the game engine
+    engine = GameEngine()
+    engine.set_view()
+
+    # Starts the game
+    engine.run()
 
 
 if __name__ == "__main__":

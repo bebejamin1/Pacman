@@ -1,8 +1,7 @@
 import os
+import sys
+import time
 import arcade
-
-from src.renderer.ui.buttons import StartButton, InstructionButton,\
-                                    HighscoreButton, ExitButton
 
 # ----| CONSTANTS |---- #
 SCREEN_WIDTH = 1500
@@ -11,45 +10,22 @@ SCREEN_TITLE = "PAC-MAN by BN🍪"
 
 PATH = "assets/menu/main/"
 MUSIC_PATH = "assets/sound/"
+BUTTON_PATH = "assets/menu/main/buttons/"
 # --------------------- #
 
-class GameView(arcade.View):
+class MenuView(arcade.View):
     """
-    This class will show the characters (player and enemies)
-    animated sprites.
+    This class will display the main menu.
     """
     def __init__(self) -> None:
         super().__init__()
+        from src.renderer.game_engine import GameEngine
+        self.engine = GameEngine()
                          
-        self.button_list: arcade.SpriteList[arcade.Sprite]
-        self.button_list = arcade.SpriteList()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        
         self._load()
         self._play_music(self.music, 1.0, True)
-
-    def create_buttons(self) -> None:
-        self.start_button = StartButton(center_x=SCREEN_WIDTH,
-                                        center_y=100,
-                                        texture=self.s_button,
-                                        view=self)
-        self.button_list.append(self.start_button)
-
-        self.instruction_button = InstructionButton(center_x=SCREEN_WIDTH // 4,
-                                                    center_y=200,
-                                                    texture=self.i_button,
-                                                    view=self)
-        self.button_list.append(self.instruction_button)
-
-        self.highscore_button = HighscoreButton(center_x=SCREEN_WIDTH // 4,
-                                                center_y=300,
-                                                texture=self.h_button,
-                                                view=self)
-        self.button_list.append(self.highscore_button)
-
-        self.exit_button = ExitButton(center_x=SCREEN_WIDTH // 4,
-                                      center_y=400,
-                                      texture=self.e_button,
-                                      view=self)
-        self.button_list.append(self.exit_button)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -57,10 +33,24 @@ class GameView(arcade.View):
 
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            for button in self.button_list:
+        hit = arcade.get_sprites_at_point((x, y), self.button_list)
+
+        for sprite in hit:
+            if sprite == self.start:
                 arcade.play_sound(self.effect)
-        
+                print("Start Game!")
+            if sprite == self.inst:
+                arcade.play_sound(self.effect)
+                self.engine.switch_instructions()
+                print("Instructions")
+            if sprite == self.high:
+                arcade.play_sound(self.effect)
+                print("Highscore")
+            if sprite == self.exit:
+                arcade.play_sound(self.effect)
+                print("Here's a cookie 🍪, bye!")
+                time.sleep(1)
+                sys.exit(0)
 
     def on_draw(self) -> None:
         self.clear()
@@ -68,7 +58,20 @@ class GameView(arcade.View):
         # Draws the background
         arcade.draw_texture_rect(self.background, 
                                  arcade.LBWH(0, 0, self.width, self.height))
-        
+
+        # Buttons' placement
+        self.start.center_x = self.window.width / 4
+        self.start.center_y =  self.window.height / 1.5
+
+        self.inst.center_x = self.window.width / 3.05
+        self.inst.center_y =  self.window.height / 1.76
+
+        self.high.center_x = self.window.width / 3.65
+        self.high.center_y =  self.window.height / 2.15
+
+        self.exit.center_x = self.window.width / 8.47
+        self.exit.center_y =  self.window.height / 2.75
+
         # Draws the buttons
         self.button_list.draw()
 
@@ -85,15 +88,19 @@ class GameView(arcade.View):
             self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
-            # Loads the buttons' sprites
-            self.s_button = arcade.load_texture(f"{PATH}start.png")
-            self.i_button = arcade.load_texture(f"{PATH}instructions.png")
-            self.h_button = arcade.load_texture(f"{PATH}highscore.png")
-            self.e_button = arcade.load_texture(f"{PATH}exit.png")
+            # Loads the buttons' sprites and put them in a list
+            self.start = arcade.Sprite(f"{BUTTON_PATH}start.png")
+            self.inst = arcade.Sprite(f"{BUTTON_PATH}instructions.png")
+            self.high = arcade.Sprite(f"{BUTTON_PATH}highscore.png")
+            self.exit = arcade.Sprite(f"{BUTTON_PATH}exit.png")
 
+            self.button_list.append(self.start)
+            self.button_list.append(self.inst)
+            self.button_list.append(self.high)
+            self.button_list.append(self.exit)
 
         except FileNotFoundError:
-            raise ValueError("\033[1;91massets file not found!\033[0m")
+            raise ValueError("\033[1;91massets folder not found!\033[0m")
 
     def _play_music(self, sound: str, volume: float,
                     loop: bool = False) -> None:
