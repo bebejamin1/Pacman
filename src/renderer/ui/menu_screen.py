@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import arcade
 
@@ -15,8 +14,6 @@ class MenuView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        from src.renderer.game_engine import GameEngine
-        self.engine = GameEngine()
                          
         self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         
@@ -25,6 +22,7 @@ class MenuView(arcade.View):
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
+            print("Bye bye!")
             arcade.close_window()
 
     def on_mouse_press(self, x: float, y: float, button: int,
@@ -34,20 +32,24 @@ class MenuView(arcade.View):
         for sprite in hit:
             if sprite == self.start:
                 arcade.play_sound(self.effect)
+                self.window.switch_game()
                 print("Start Game!")
+
             if sprite == self.inst:
                 arcade.play_sound(self.effect)
-                self.engine.switch_instructions()
+                self.window.switch_instructions()
                 print("Instructions")
+
             if sprite == self.high:
                 arcade.play_sound(self.effect)
-                self.engine.switch_highscore()
+                self.window.switch_highscore()
                 print("Highscore")
+                
             if sprite == self.exit:
                 arcade.play_sound(self.effect)
                 print("Here's a cookie 🍪, bye!")
                 time.sleep(1)
-                sys.exit(0)
+                arcade.exit()
 
     def on_draw(self) -> None:
         self.clear()

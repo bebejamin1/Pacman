@@ -1,3 +1,0 @@
-import arcade
-
-class Player():

@@ -47,6 +47,28 @@ def leaderbord_update(player_name: str, player_score: int) -> dict:
 
 
 # *****************************************************************************
+# *                             LEAD EXTRACT                                  *
+# * 
+
+def leaderboard_extract(pathfile: str) -> str:
+    content = ""
+    i = 1
+
+    with open(pathfile, "r") as f:
+        bord = json.loads(strip_json_comments(f.read()))
+    
+    for score, lst in bord.items():
+        for dict in lst:
+            if i < 10:
+                content += f"{i}.  {dict['player_name']}:\n{dict['player_score']}\n"
+            else:
+                content += f"{i}. {dict['player_name']}:\n{dict['player_score']}\n"
+            i += 1
+    
+    return content
+
+
+# *****************************************************************************
 # *                               PARSER                                      *
 # *                                                                           *
 

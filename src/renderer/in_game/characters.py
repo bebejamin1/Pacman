@@ -1,10 +1,11 @@
 import arcade
+
 from arcade.types import PathOrTexture
+from typing import Any
 
-from typing import Any, List
-
-# ----| CONSTANT |---- #
+# ----| CONSTANTS |---- #
 ANIM_SPEED = 5
+# --------------------- #
 
 
 class Character(arcade.Sprite):
@@ -13,18 +14,15 @@ class Character(arcade.Sprite):
     animated sprites.
     """
     def __init__(self, path: PathOrTexture, scale: float,
-                 char_anim: List[arcade.Texture]) -> None:
+                 character_animation: list[arcade.Texture]) -> None:
         super().__init__(path, scale)
 
         self.curr_texture = 0
-        self.animation = char_anim
+        self.animation = character_animation
         self.timer = 0.0
 
     def update_animation(self, delta_time: float = 1 / 60,
-                         *args = Any, **kwargs: Any) -> None:
-        """
-        It updates the character's animation, frame by frame.
-        """
+                         *args: Any, **kwargs: Any) -> None:
         self.timer += delta_time
 
         if self.timer > (1 / ANIM_SPEED):
@@ -32,11 +30,3 @@ class Character(arcade.Sprite):
             self.texture = self.animation[self.curr_texture]
 
             self.timer = 0.0
-
-class Objects(arcade.Sprite):
-    """
-    This class will show the objects (different gums as
-    well as the wall and ground) animated sprites.
-    """
-    def __init__(self, path: PathOrTexture, scale: float) -> None:
-        super().__init__(path, scale)

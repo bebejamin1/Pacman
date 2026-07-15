@@ -1,13 +1,9 @@
 import os
 import arcade
 
-from arcade.gui import UIManager, UITextArea
-
 # ----| CONSTANTS |---- #
 PATH = "assets/menu/main/"
-MUSIC_PATH = "assets/sound/"
-
-INSTRUCTIONS = "Test\nnew-line"
+FONT_PATH = "assets/font/"
 # --------------------- #
 
 class InstructionsView(arcade.View):
@@ -16,23 +12,71 @@ class InstructionsView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        from src.renderer.game_engine import GameEngine
-        self.window = GameEngine()
-        # self.text_list = []
-        
+        self.text_list: list[arcade.Text] = []
+
         # Loads the background
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            self.background: arcade.Texture
-            self.background = arcade.load_texture(f"{PATH}main_menu.png")
-        except FileNotFoundError:
-                raise ValueError("\033[1;91mBackground file not found!\033[0m")
+            self.background: arcade.Texture = \
+                arcade.load_texture(f"{PATH}main_menu.png")
+            arcade.load_font(f"{FONT_PATH}PublicPixel.ttf")
 
-        # text = UITextArea(x=100, y=200, width=SCREEN_WIDTH / 2,
-        #                   height=SCREEN_HEIGHT / 2, text=INSTRUCTIONS,
-        #                   text_color=(0, 0, 0, 255))
+        except FileNotFoundError:
+            raise ValueError("\033[1;91mBackground file not found!\033[0m")
+        
+        self.game_instructions()
+
+    def game_instructions(self) -> None:
+        # Controls during the game
+        commands = arcade.Text(text="Commands:", x=30, y=770,
+                               color=arcade.color.BLACK, font_size=30,
+                               align="left", font_name="Public Pixel")
+
+        play = arcade.Text(text="- Play with WASD or the arrows", x=30,
+                           y=700, color=arcade.color.BLACK, font_size=20,
+                           align="left", font_name="Public Pixel")
+
+        pause = arcade.Text(text="- Press SPACE to pause", x=30, y=650,
+                            color=arcade.color.BLACK, font_size=20,
+                            align="left", font_name="Public Pixel")
+
+        quit = arcade.Text(text="- Press ESC to quit", x=30, y=600,
+                           color=arcade.color.BLACK, font_size=20,
+                           align="left", font_name="Public Pixel")
+
+        self.text_list.append(commands)
+        self.text_list.append(play)
+        self.text_list.append(pause)
+        self.text_list.append(quit)
+
+        # Rules of the game
+        rules = arcade.Text(text="Rules:", x=30, y=530,
+                            color=arcade.color.BLACK, font_size=28,
+                            align="left", font_name="Public Pixel")
+
+        rule1 = arcade.Text(text="- The Minotaur avoids humans", x=30,
+                            y=460, color=arcade.color.BLACK, font_size=20,
+                            align="left", font_name="Public Pixel")
+
+        rule2 = arcade.Text(text="- Bones gives points", x=30, y=410,
+                            color=arcade.color.BLACK, font_size=20,
+                            align="left", font_name="Public Pixel")
+
+        rule3 = arcade.Text(text="- Axes gives more points and", x=30,
+                            y=360, color=arcade.color.BLACK, font_size=20,
+                            align="left", font_name="Public Pixel")
+
+        rule4 = arcade.Text(text="gives the ability to eat humans", x=30,
+                            y=310, color=arcade.color.BLACK, font_size=20,
+                            align="left", font_name="Public Pixel")
+
+        self.text_list.append(rules)
+        self.text_list.append(rule1)
+        self.text_list.append(rule2)
+        self.text_list.append(rule3)
+        self.text_list.append(rule4)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -45,5 +89,6 @@ class InstructionsView(arcade.View):
         arcade.draw_texture_rect(self.background, 
                                  arcade.LBWH(0, 0, self.width, self.height))
 
-        # Prints a scrollable text
-        # self.text_list.draw()
+        # Prints the instructions
+        for text in self.text_list:
+            text.draw()
