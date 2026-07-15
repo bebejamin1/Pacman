@@ -1,5 +1,3 @@
-
-
 # python3 pac-man.py config.json
 
 import sys
@@ -17,6 +15,8 @@ def main() -> None:
     try:
         # from src.visuel_place_holder.visual import play
         from src.renderer.game_engine import GameEngine
+        from src.renderer.ui.menu_screen import MenuView
+        from src.renderer.ui.instructions_screen import InstructionsView
     except ModuleNotFoundError as e:
         print("\n" + f"{r}[ERROR]{rs}: missing dependency ({e.name})." + "\n"
               "Run `make install` then `uv run python pac-man.py "
@@ -24,6 +24,7 @@ def main() -> None:
         return
 
     # play(f"data/{sys.argv[1]}")
+
     # Loads the game engine
     engine = GameEngine()
     engine.set_view()

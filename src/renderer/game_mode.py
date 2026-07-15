@@ -11,7 +11,7 @@ CHARACTER_SIZE = 1
 CHARACTER_SPEED = 2
 
 
-class Game(arcade.Window):
+class Game(arcade.View):
     """
     This class will show the game and make the user
     able to control the character's movement.

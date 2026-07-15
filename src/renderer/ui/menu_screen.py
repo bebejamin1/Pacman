@@ -4,10 +4,6 @@ import time
 import arcade
 
 # ----| CONSTANTS |---- #
-SCREEN_WIDTH = 1500
-SCREEN_HEIGHT = 1080
-SCREEN_TITLE = "PAC-MAN by BN🍪"
-
 PATH = "assets/menu/main/"
 MUSIC_PATH = "assets/sound/"
 BUTTON_PATH = "assets/menu/main/buttons/"
@@ -45,6 +41,7 @@ class MenuView(arcade.View):
                 print("Instructions")
             if sprite == self.high:
                 arcade.play_sound(self.effect)
+                self.engine.switch_highscore()
                 print("Highscore")
             if sprite == self.exit:
                 arcade.play_sound(self.effect)
@@ -105,12 +102,3 @@ class MenuView(arcade.View):
     def _play_music(self, sound: str, volume: float,
                     loop: bool = False) -> None:
         arcade.play_sound(sound=self.music, loop=loop)
-
-
-def start_game() -> None:
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE,
-                           resizable=False, center_window=True,
-                           antialiasing=True)
-    game_view = GameView()
-    window.show_view(game_view)
-    arcade.run()
