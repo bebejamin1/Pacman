@@ -115,6 +115,7 @@ def parse_conf(path: str) -> list:
 # *                                                                           *
 
 def parse_leaderbord(path: str) -> dict:
+    leaderbord: dict
     try:
         if not (path.endswith(".json")):
             raise ValueError("The leaderboard must be a .json file.")

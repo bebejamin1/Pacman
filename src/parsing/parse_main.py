@@ -4,6 +4,8 @@ import json
 
 from src.parsing.parse import parse_conf, parse_leaderbord, strip_json_comments
 
+leaderbord_path: str = ""
+
 
 # *****************************************************************************
 # *                           DELETE OVER TEN                                 *
