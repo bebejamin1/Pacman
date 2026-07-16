@@ -1,31 +1,109 @@
+import os
 import arcade
 
+# ----| CONSTANTS |---- #
+PATH = "assets/background/"
+MUSIC_PATH = "assets/sound/"
+# --------------------- #
+
 class PauseView(arcade.View):
-    def __init__(self, game_view):
+    """
+    This class manages the pause menu.
+    """
+    def __init__(self):
         super().__init__()
-        self.game_view = game_view
+        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+
+        self._load()
+
+    def on_key_press(self, key, _modifiers):
+        if key == arcade.key.ESCAPE:
+            self.window.show_view(self.window.menu_view)
+
+        if key == arcade.key.SPACE:
+            self.window.show_view(self.window.game_view)
+
+    def on_mouse_press(self, x: float, y: float, button: int,
+                       _modifiers: int) -> None:
+        hit = arcade.get_sprites_at_point((x, y), self.button_list)
+
+        for sprite in hit:
+            if sprite == self.resume:
+                arcade.play_sound(self.effect)
+                self.window.switch_game()
+                print("Resume Game")
+
+            if sprite == self.menu:
+                arcade.play_sound(self.effect)
+                self.window.switch_menu()
+                print("Return Menu")
 
     def on_draw(self):
         self.clear()
 
-        player_sprite = self.game_view.player_sprite
-        arcade.draw_sprite(player_sprite)
+        # Draws the background
+        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0, 
+                                                              self.width,
+                                                              self.height))
 
-        arcade.draw_lbwh_rectangle_filled(left=0, bottom=0,
-                                          right=SCREEN_WIDTH,
-                                          top=SCREEN_HEIGHT,
-                                          color=arcade.color.BLACK[:3] + (200,))
+        # Draws a semi-opaque black layer on the screen
+        arcade.draw_rect_filled(arcade.XYWH(self.width / 2,
+                                            self.height / 2,
+                                            self.width,
+                                            self.height),
+                                (0, 0, 0, 128))
 
-        arcade.draw_text("PAUSED", WIDTH / 2, HEIGHT / 2 + 50,
-                         arcade.color.WHITE, font_size=50, anchor_x="center")
+        # Buttons' placement
+        self.resume.center_x = self.width / 2
+        self.resume.center_y =  self.height - 450
 
-        arcade.draw_text("Press Esc. to return",
-                         WIDTH / 2,
-                         HEIGHT / 2,
-                         arcade.color.WHITE,
-                         font_size=20,
-                         anchor_x="center")
+        self.menu.center_x = self.width / 2
+        self.menu.center_y =  self.height - 600
 
-    def on_key_press(self, key, _modifiers):
-        if key == arcade.key.ESCAPE:
-            self.window.show_view(self.game_view)
+        # Draws text
+        self.pause.draw()
+
+        # Draws the buttons
+        self.button_list.draw()
+
+    def _load_text(self) -> None:
+        self.pause = arcade.Text(text="PAUSE",
+                                 x=self.width / 2,
+                                 y=self.height - 300,
+                                 color=arcade.color.LAVENDER,
+                                 font_size=60,
+                                 anchor_x="center",
+                                 font_name="Public Pixel")
+
+        self.resume = arcade.create_text_sprite(text="Resume Game",
+                                                color=arcade.color.LAVENDER,
+                                                font_size=40,
+                                                font_name="Public Pixel")
+
+        self.menu = arcade.create_text_sprite(text="Return Menu",
+                                              color=arcade.color.LAVENDER,
+                                              font_size=40,
+                                              font_name="Public Pixel")
+
+        # Appends the buttons on a list
+        self.button_list.append(self.resume)
+        self.button_list.append(self.menu)
+
+    def _load(self) -> None:
+        try:
+            if not os.path.exists("assets/"):
+                raise ValueError
+
+            # Loads the background
+            self.background: arcade.Texture = \
+                arcade.load_texture(f"{PATH}maze_back.png")
+
+            # Loads the music and effect
+            # self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
+            self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
+
+            # Loads the text
+            self._load_text()
+
+        except FileNotFoundError:
+            raise ValueError("\033[1;91massets folder not found!\033[0m")

@@ -2,7 +2,7 @@ import os
 import arcade
 
 # ----| CONSTANTS |---- #
-PATH = "assets/menu/main/"
+PATH = "assets/menu/"
 FONT_PATH = "assets/font/"
 # --------------------- #
 

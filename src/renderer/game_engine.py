@@ -1,11 +1,17 @@
 import arcade
 
+from typing import Any
+
+from mazegen.mazegenerator.mazegenerator import MazeGenerator
+
+from src.engine.game import Game
+
 from src.renderer.ui.menu_screen import MenuView
 from src.renderer.ui.instructions_screen import InstructionsView
 from src.renderer.ui.highscore_screen import HighscoreView
 from src.renderer.game_mode import GameView
 from src.renderer.ui.pause_screen import PauseView
-# from src.renderer.ui.end_screen import EndView
+from src.renderer.ui.end_screen import EndView
 
 # ----| CONSTANTS |---- #
 SCREEN_WIDTH = 1500
@@ -28,7 +34,7 @@ class GameEngine(arcade.Window):
         self.highscore_view = HighscoreView()
         self.game_view = GameView()
         self.pause_view = PauseView()
-        # self.end_view = EndView()
+        self.end_view = EndView()
 
     def switch_menu(self) -> None:
         self.show_view(self.menu_view)
@@ -45,10 +51,25 @@ class GameEngine(arcade.Window):
     def switch_pause(self) -> None:
         self.show_view(self.pause_view)
 
-    # def switch_end(self) -> None:
-    #     self.show_view(self.end_view)
+    def switch_end(self) -> None:
+        self.show_view(self.end_view)
 
     def run(self) -> None:
         # Goes on the menu by default and run the game
         self.switch_menu()
         arcade.run()
+
+    def new_game(self, config: dict[str, Any] , 
+                 levels: list[dict[str, Any]]) -> Game:
+        lvl_width: int = levels[0].get("width")
+        lvl_height: int = levels[0].get("height")
+        seed: int = config.get("seed")
+
+        nb_levels = len(levels)
+        first_maze = self.new_maze((lvl_width, lvl_height), seed)
+        return Game(first_maze, nb_levels)
+
+    def new_maze(self, size: tuple[int, int], seed: int) -> list[list[int]]:
+        maze: list[list[int]] = MazeGenerator(size=size, perfect=False,
+                                              seed=seed).maze
+        return maze

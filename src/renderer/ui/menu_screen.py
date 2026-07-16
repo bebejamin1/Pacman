@@ -3,9 +3,9 @@ import time
 import arcade
 
 # ----| CONSTANTS |---- #
-PATH = "assets/menu/main/"
+PATH = "assets/menu/"
 MUSIC_PATH = "assets/sound/"
-BUTTON_PATH = "assets/menu/main/buttons/"
+BUTTON_PATH = "assets/menu/buttons/"
 # --------------------- #
 
 class MenuView(arcade.View):
@@ -14,9 +14,8 @@ class MenuView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-                         
         self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
-        
+
         self._load()
         self._play_music(self.music, 1.0, True)
 
@@ -48,7 +47,6 @@ class MenuView(arcade.View):
             if sprite == self.exit:
                 arcade.play_sound(self.effect)
                 print("Here's a cookie 🍪, bye!")
-                time.sleep(1)
                 arcade.exit()
 
     def on_draw(self) -> None:
@@ -80,8 +78,8 @@ class MenuView(arcade.View):
                 raise ValueError
 
             # Loads the background
-            self.background: arcade.Texture
-            self.background = arcade.load_texture(f"{PATH}main_menu.png")
+            self.background: arcade.Texture = \
+                arcade.load_texture(f"{PATH}main_menu.png")
 
             # Loads the music and effect
             self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")

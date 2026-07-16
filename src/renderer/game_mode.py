@@ -3,19 +3,19 @@ import arcade
 
 from typing import Any
 
+from mazegen.mazegenerator.mazegenerator import MazeGenerator
+
 from src.renderer.in_game.characters import Character
 from src.renderer.in_game.sprite import Object
+from src.renderer.in_game.maze import Maze
 
 from src.parsing.parse import parse_conf
 
 # ----| CONSTANTS |---- #
-WINDOW_WIDTH = 1500
-WINDOW_HEIGHT = 1080
-WINDOW_TITLE = "PAC-MAN"
-
 PATH = "assets/background/"
 PLAYER_PATH = "assets/player/"
 MAZE_PATH = "assets/maze/"
+
 SPRITE_SIZE = 24
 CHARACTER_SIZE = 1
 CHARACTER_SPEED = 2
@@ -28,10 +28,9 @@ class GameView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.config = parse_conf("data/config.json")
-        self.total_time = self.config[1].get("level_max_time")
-
-        self.maze: list[dict[str, Any]] = self.config[1].get("level")
+        self.config: list[Any, dict[str, Any]] = parse_conf("data/config.json")
+        self.total_time: int = self.config[1].get("level_max_time")
+        self.lvl: dict[str, Any] = self.config[1].get("level")
 
         self.player_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
@@ -39,14 +38,8 @@ class GameView(arcade.View):
         self.enemy_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
-        self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
-        self.ground_list: arcade.SpriteList[arcade.Sprite] = \
-            arcade.SpriteList()
-
-        self.pacgum: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
-        self.super_pac: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
-
-        # self._build_walls()
+        # self._maze_generation()
+        self._collectibles()
         self._load_sprite()
         self._load_hud()
         # self.physic_engine = arcade.PhysicsEngineSimple(self.player,
@@ -58,6 +51,8 @@ class GameView(arcade.View):
         arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0, 
                                                               self.width,
                                                               self.height))
+
+        # self._maze_generation()
 
         # Draws the HUD
         self.level_text.draw()
@@ -76,7 +71,7 @@ class GameView(arcade.View):
         # enemy_hit = arcade.check_for_collision_with_list(self.player,
         #                                                  self.enemy)
 
-        # Updated timer
+        # Updates countdown
         self.time_elapsed -= delta_time
         minutes = int(self.time_elapsed // 60)
         seconds = int(self.time_elapsed % 60)
@@ -113,48 +108,48 @@ class GameView(arcade.View):
     def _load_hud(self) -> None:
         self.life = self.config[1].get("live")
         self.score = 0
-        self.level = self.maze[0].get("name")
+        self.level = self.lvl[0].get("name")
 
         self.level_text = arcade.Text(text=f"{self.level}",
-                                 x=WINDOW_WIDTH / 2, y=WINDOW_HEIGHT - 50,
+                                 x=self.width / 2, y=self.height - 50,
                                  color=arcade.color.LAVENDER,
                                  font_size=25, anchor_x="center", 
                                  font_name="Public Pixel")
                                  
         self.timer_text = arcade.Text(text="00:00",
-                                      x=WINDOW_WIDTH / 2, y=WINDOW_HEIGHT - 100,
+                                      x=self.width / 2, y=self.height - 85,
                                       color=arcade.color.LAVENDER,
                                       font_size=20, anchor_x="center", 
                                       font_name="Public Pixel")
         self.time_elapsed = self.config[1].get("level_max_time")
 
         self.life_text = arcade.Text(text=f"x{self.life}",
-                                x=50, y=WINDOW_HEIGHT - 50,
+                                x=50, y=self.height - 50,
                                 color=arcade.color.LAVENDER,
                                 font_size=25, anchor_x="left", 
                                 font_name="Public Pixel")
         
         self.score_text = arcade.Text(text=f"{self.score}",
-                                 x=WINDOW_WIDTH - 50, y=WINDOW_HEIGHT - 50,
+                                 x=self.width - 50, y=self.height - 50,
                                  color=arcade.color.LAVENDER,
                                  font_size=25, anchor_x="right", 
                                  font_name="Public Pixel")
 
         self.text = arcade.Text(text="Press SPACE to pause",
-                                x=WINDOW_WIDTH / 2, y=100,
+                                x=self.width / 2, y=100,
                                 color=arcade.color.LAVENDER,
                                 font_size=10, anchor_x="center", 
                                 font_name="Public Pixel")
 
-    # def _build_walls(self, x: float, y: float) -> None:
-    #     try:
-    #         front_wall = Object(f"{MAZE_PATH}front_wall.png", 1)
-    #     except FileNotFoundError:
-    #         raise ValueError("\033[1;91mError: wall asset not found\033[0m")
-    #     front_wall.center_x = x * SPRITE_SIZE + (SPRITE_SIZE / 2) + OFFSET_X
-    #     front_wall.center_y = ((WINDOW_HEIGHT - 100) - (y * SPRITE_SIZE) -
-    #                      (SPRITE_SIZE / 2) + OFFSET_Y)
-    #     self.wall_list.append(wall)
+    def _maze_generation(self) -> None:
+        self.game = self.window.new_game(self.config[1], self.lvl)
+
+        self.maze = Maze(self.config[1], 0, self.game)
+        self.maze.generate_maze(self.game)
+
+    def _collectibles(self) -> None:
+        self.pacgum: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.super_pac: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
 
     def _load_sprite(self) -> None:
         try:
@@ -162,6 +157,9 @@ class GameView(arcade.View):
                 raise ValueError
 
             self.background = arcade.load_texture(f"{PATH}maze_back.png")
+
+            self.wall = arcade.load_texture(f"{MAZE_PATH}front_wall.png")
+            self.ground = arcade.load_texture(f"{MAZE_PATH}ground.png")
 
             # character_animation = [
             #     arcade.load_texture(f"{PLAYER_PATH}character1.png"),

@@ -4,7 +4,7 @@ import arcade
 from src.parsing.parse_main import leaderboard_extract
 
 # ----| CONSTANTS |---- #
-PATH = "assets/menu/main/"
+PATH = "assets/menu/"
 FONT_PATH = "assets/font/"
 LEAD_PATH = "data/leaderboard.json"
 # --------------------- #
