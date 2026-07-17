@@ -1,3 +1,5 @@
+
+
 import os
 import arcade
 
@@ -6,13 +8,15 @@ PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
 # --------------------- #
 
+
 class PauseView(arcade.View):
     """
     This class manages the pause menu.
     """
     def __init__(self):
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
+        )
 
         self._load()
 
@@ -42,7 +46,7 @@ class PauseView(arcade.View):
         self.clear()
 
         # Draws the background
-        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0, 
+        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
@@ -55,10 +59,10 @@ class PauseView(arcade.View):
 
         # Buttons' placement
         self.resume.center_x = self.width / 2
-        self.resume.center_y =  self.height - 450
+        self.resume.center_y = self.height - 450
 
         self.menu.center_x = self.width / 2
-        self.menu.center_y =  self.height - 600
+        self.menu.center_y = self.height - 600
 
         # Draws text
         self.pause.draw()
@@ -67,23 +71,29 @@ class PauseView(arcade.View):
         self.button_list.draw()
 
     def _load_text(self) -> None:
-        self.pause = arcade.Text(text="PAUSE",
-                                 x=self.width / 2,
-                                 y=self.height - 300,
-                                 color=arcade.color.LAVENDER,
-                                 font_size=60,
-                                 anchor_x="center",
-                                 font_name="Public Pixel")
+        self.pause = arcade.Text(
+            text="PAUSE",
+            x=self.width / 2,
+            y=self.height - 300,
+            color=arcade.color.LAVENDER,
+            font_size=60,
+            anchor_x="center",
+            font_name="Public Pixel"
+                               )
 
-        self.resume = arcade.create_text_sprite(text="Resume Game",
-                                                color=arcade.color.LAVENDER,
-                                                font_size=40,
-                                                font_name="Public Pixel")
+        self.resume = arcade.create_text_sprite(
+            text="Resume Game",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                               )
 
-        self.menu = arcade.create_text_sprite(text="Return Menu",
-                                              color=arcade.color.LAVENDER,
-                                              font_size=40,
-                                              font_name="Public Pixel")
+        self.menu = arcade.create_text_sprite(
+            text="Return Menu",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                             )
 
         # Appends the buttons on a list
         self.button_list.append(self.resume)

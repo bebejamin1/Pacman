@@ -1,3 +1,5 @@
+
+
 import arcade
 
 from typing import Any
@@ -20,15 +22,18 @@ SCREEN_HEIGHT = 1080
 SCREEN_TITLE = "PAC-MAN by BN🍪"
 # --------------------- #
 
+
 class GameEngine(arcade.Window):
     """
     This class Orchestrate every views.
     """
     def __init__(self) -> None:
-        super().__init__(width=SCREEN_WIDTH, height=SCREEN_HEIGHT,
-                         title=SCREEN_TITLE, resizable=False, 
-                         center_window=True, antialiasing=True)
-        
+        super().__init__(
+            width=SCREEN_WIDTH, height=SCREEN_HEIGHT,
+            title=SCREEN_TITLE, resizable=False,
+            center_window=True, antialiasing=True
+                        )
+
         self.win: bool = False
         self.score: int = 0
 
@@ -67,7 +72,7 @@ class GameEngine(arcade.Window):
         self.switch_menu()
         arcade.run()
 
-    def new_game(self, config: dict[str, Any] , 
+    def new_game(self, config: dict[str, Any],
                  levels: list[dict[str, Any]]) -> Game:
         lvl_width: int = levels[0].get("width")
         lvl_height: int = levels[0].get("height")

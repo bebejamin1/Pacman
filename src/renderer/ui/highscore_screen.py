@@ -1,3 +1,5 @@
+
+
 import os
 import arcade
 
@@ -9,6 +11,7 @@ FONT_PATH = "assets/font/"
 LEAD_PATH = "data/leaderboard.json"
 # --------------------- #
 
+
 class HighscoreView(arcade.View):
     """
     This class displays the leaderboard.
@@ -16,7 +19,7 @@ class HighscoreView(arcade.View):
     def __init__(self) -> None:
         super().__init__()
         self.text_list: list[arcade.Text] = []
-        
+
         # Loads the background
         try:
             if not os.path.exists("assets/"):
@@ -32,7 +35,7 @@ class HighscoreView(arcade.View):
         self.text = arcade.Text(text="Press ESCAPE to go back",
                                 x=self.width / 2, y=100,
                                 color=arcade.color.DARK_ORANGE,
-                                font_size=10, anchor_x="center", 
+                                font_size=10, anchor_x="center",
                                 font_name="Public Pixel")
 
         self.leaderboard()
@@ -47,12 +50,12 @@ class HighscoreView(arcade.View):
 
         for score in content:
             if i % 2 == 0:
-                text = arcade.Text(text=score, x=260, y=y, 
+                text = arcade.Text(text=score, x=260, y=y,
                                    color=arcade.color.BLACK, font_size=24,
                                    align="left", font_name="Public Pixel")
 
             else:
-                text = arcade.Text(text=score, x=750, y=y, 
+                text = arcade.Text(text=score, x=750, y=y,
                                    color=arcade.color.BLACK, font_size=24,
                                    align="left", font_name="Public Pixel")
                 y -= 55
@@ -69,7 +72,7 @@ class HighscoreView(arcade.View):
         self.clear()
 
         # Draws the background
-        arcade.draw_texture_rect(self.background, 
+        arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
         # Displays the top-scorer

@@ -1,6 +1,7 @@
 import arcade
 from arcade.types import PathOrTexture
 
+
 class Object(arcade.Sprite):
     """
     This class will show the objects (different gums as

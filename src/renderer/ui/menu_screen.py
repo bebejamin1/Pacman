@@ -1,5 +1,7 @@
+
+
 import os
-import time
+import time  # noqa Jamais utiliser
 import arcade
 
 # ----| CONSTANTS |---- #
@@ -8,13 +10,15 @@ MUSIC_PATH = "assets/sound/"
 BUTTON_PATH = "assets/menu/buttons/"
 # --------------------- #
 
+
 class MenuView(arcade.View):
     """
     This class will display the main menu.
     """
     def __init__(self) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
+        )
 
         self._load()
         self._play_music(self.music, 1.0, True)
@@ -47,7 +51,7 @@ class MenuView(arcade.View):
                 arcade.play_sound(self.effect)
                 self.window.switch_highscore()
                 print("Highscore")
-                
+
             if sprite == self.exit:
                 arcade.play_sound(self.effect)
                 print("Here's a cookie 🍪, bye!")
@@ -57,21 +61,21 @@ class MenuView(arcade.View):
         self.clear()
 
         # Draws the background
-        arcade.draw_texture_rect(self.background, 
+        arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
         # Buttons' placement
         self.start.center_x = self.window.width / 4
-        self.start.center_y =  self.window.height / 1.5
+        self.start.center_y = self.window.height / 1.5
 
         self.inst.center_x = self.window.width / 3.05
-        self.inst.center_y =  self.window.height / 1.76
+        self.inst.center_y = self.window.height / 1.76
 
         self.high.center_x = self.window.width / 3.65
-        self.high.center_y =  self.window.height / 2.15
+        self.high.center_y = self.window.height / 2.15
 
         self.exit.center_x = self.window.width / 8.47
-        self.exit.center_y =  self.window.height / 2.75
+        self.exit.center_y = self.window.height / 2.75
 
         # Draws the buttons
         self.button_list.draw()

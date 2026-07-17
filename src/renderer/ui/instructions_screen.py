@@ -6,6 +6,7 @@ PATH = "assets/menu/"
 FONT_PATH = "assets/font/"
 # --------------------- #
 
+
 class InstructionsView(arcade.View):
     """
     This class will display the game's control and instructions.
@@ -25,7 +26,7 @@ class InstructionsView(arcade.View):
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mBackground file not found!\033[0m")
-        
+
         self.game_instructions()
 
     def game_instructions(self) -> None:
@@ -81,9 +82,9 @@ class InstructionsView(arcade.View):
         text = arcade.Text(text="Press ESCAPE to go back",
                            x=self.width / 2, y=100,
                            color=arcade.color.DARK_ORANGE,
-                           font_size=10, anchor_x="center", 
+                           font_size=10, anchor_x="center",
                            font_name="Public Pixel")
-        
+
         self.text_list.append(text)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
@@ -94,7 +95,7 @@ class InstructionsView(arcade.View):
         self.clear()
 
         # Draws the background
-        arcade.draw_texture_rect(self.background, 
+        arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
         # Prints the instructions

@@ -1,12 +1,14 @@
+
+
 import os
 import arcade
 
 from typing import Any
 
-from mazegen.mazegenerator.mazegenerator import MazeGenerator
+from mazegen.mazegenerator.mazegenerator import MazeGenerator  # noqa never use
 
-from src.renderer.in_game.characters import Character
-from src.renderer.in_game.sprite import Object
+from src.renderer.in_game.characters import Character  # noqa pareil
+from src.renderer.in_game.sprite import Object  # noqa pareil
 from src.renderer.in_game.maze import Maze
 
 from src.parsing.parse import parse_conf
@@ -20,6 +22,7 @@ SPRITE_SIZE = 24
 CHARACTER_SIZE = 1
 CHARACTER_SPEED = 2
 # --------------------- #
+
 
 class GameView(arcade.View):
     """
@@ -48,7 +51,7 @@ class GameView(arcade.View):
     def on_draw(self) -> None:
         self.clear()
 
-        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0, 
+        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
@@ -67,7 +70,7 @@ class GameView(arcade.View):
         #                                                   self.pacgum)
         # super_pac_hit = arcade.check_for_collision_with_list(self.player,
         #                                                      self.super_pac)
-        
+
         # enemy_hit = arcade.check_for_collision_with_list(self.player,
         #                                                  self.enemy)
 
@@ -113,36 +116,46 @@ class GameView(arcade.View):
         self.score = 0
         self.level = self.lvl[0].get("name")
 
-        self.level_text = arcade.Text(text=f"{self.level}",
-                                 x=self.width / 2, y=self.height - 50,
-                                 color=arcade.color.LAVENDER,
-                                 font_size=25, anchor_x="center", 
-                                 font_name="Public Pixel")
-                                 
-        self.timer_text = arcade.Text(text="00:00",
-                                      x=self.width / 2, y=self.height - 85,
-                                      color=arcade.color.LAVENDER,
-                                      font_size=20, anchor_x="center", 
-                                      font_name="Public Pixel")
+        self.level_text = arcade.Text(
+            text=f"{self.level}",
+            x=self.width / 2, y=self.height - 50,
+            color=arcade.color.LAVENDER,
+            font_size=25, anchor_x="center",
+            font_name="Public Pixel"
+                                     )
+
+        self.timer_text = arcade.Text(
+            text="00:00",
+            x=self.width / 2, y=self.height - 85,
+            color=arcade.color.LAVENDER,
+            font_size=20, anchor_x="center",
+            font_name="Public Pixel"
+                                    )
         self.time_elapsed = self.config[1].get("level_max_time")
 
-        self.life_text = arcade.Text(text=f"x{self.life}",
-                                x=50, y=self.height - 50,
-                                color=arcade.color.LAVENDER,
-                                font_size=25, anchor_x="left", 
-                                font_name="Public Pixel")
-        
-        self.score_text = arcade.Text(text=f"{self.score}",
-                                 x=self.width - 50, y=self.height - 50,
-                                 color=arcade.color.LAVENDER,
-                                 font_size=25, anchor_x="right", 
-                                 font_name="Public Pixel")
+        self.life_text = arcade.Text(
+            text=f"x{self.life}",
+            x=50, y=self.height - 50,
+            color=arcade.color.LAVENDER,
+            font_size=25, anchor_x="left",
+            font_name="Public Pixel"
+                                    )
 
-        self.text = arcade.Text(text="Press SPACE to pause",
-                                x=self.width / 2, y=100,
-                                color=arcade.color.LAVENDER,
-                                font_size=10, anchor_x="center", 
-                                font_name="Public Pixel")
+        self.score_text = arcade.Text(
+            text=f"{self.score}",
+            x=self.width - 50, y=self.height - 50,
+            color=arcade.color.LAVENDER,
+            font_size=25, anchor_x="right",
+            font_name="Public Pixel"
+                                     )
+
+        self.text = arcade.Text(
+            text="Press SPACE to pause",
+            x=self.width / 2, y=100,
+            color=arcade.color.LAVENDER,
+            font_size=10, anchor_x="center",
+            font_name="Public Pixel"
+                               )
 
     def _maze_generation(self) -> None:
         self.game = self.window.new_game(self.config[1], self.lvl)
@@ -171,7 +184,7 @@ class GameView(arcade.View):
             #     arcade.load_texture(f"{PLAYER_PATH}character4.png"),
             # ]
 
-            # self.player = Character(f"{PLAYER_PATH}character1.png", CHARACTER_SIZE,
+            # self.player = Character(f"{PLAYER_PATH}character1.png", CHARACTER_SIZE,  # noqa
             #                         character_animation)
             # self.player.center_x = (((self.maze.entry_x * SPRITE_SIZE) +
             #                         (SPRITE_SIZE / 2)) + OFFSET_X)

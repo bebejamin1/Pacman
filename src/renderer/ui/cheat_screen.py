@@ -1,3 +1,5 @@
+
+
 import os
 import arcade
 
@@ -6,13 +8,15 @@ PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
 # --------------------- #
 
+
 class CheatView(arcade.View):
     """
     This class manages the pause menu.
     """
     def __init__(self):
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
+        )
 
         self._load()
 
@@ -26,7 +30,7 @@ class CheatView(arcade.View):
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
         hit = arcade.get_sprites_at_point((x, y), self.button_list)
-        click = 0
+        click = 0  # noqa jamais utiliser suppr ou pas
 
         for sprite in hit:
             if sprite == self.invincible:
@@ -58,7 +62,7 @@ class CheatView(arcade.View):
         self.clear()
 
         # Draws the background
-        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0, 
+        arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
@@ -71,22 +75,22 @@ class CheatView(arcade.View):
 
         # Buttons' placement
         self.invincible.center_x = self.width / 2
-        self.invincible.center_y =  self.height - 250
+        self.invincible.center_y = self.height - 250
 
         self.skip.center_x = self.width / 2
-        self.skip.center_y =  self.height - 375
+        self.skip.center_y = self.height - 375
 
         self.stop_ghost.center_x = self.width / 2
-        self.stop_ghost.center_y =  self.height - 500
+        self.stop_ghost.center_y = self.height - 500
 
         self.more_lives.center_x = self.width / 2
-        self.more_lives.center_y =  self.height - 625
+        self.more_lives.center_y = self.height - 625
 
         self.more_speed.center_x = self.width / 2
-        self.more_speed.center_y =  self.height - 750
+        self.more_speed.center_y = self.height - 750
 
         self.resume.center_x = self.width / 2
-        self.resume.center_y =  self.height - 875
+        self.resume.center_y = self.height - 875
 
         # Draws text
         self.cheat.draw()
@@ -95,44 +99,57 @@ class CheatView(arcade.View):
         self.button_list.draw()
 
     def _load_text(self) -> None:
-        self.cheat = arcade.Text(text="CHEATS",
-                                 x=self.width / 2,
-                                 y=self.height - 150,
-                                 color=arcade.color.LAVENDER,
-                                 font_size=60,
-                                 anchor_x="center",
-                                 font_name="Public Pixel")
+        self.cheat = arcade.Text(
+            text="CHEATS",
+            x=self.width / 2,
+            y=self.height - 150,
+            color=arcade.color.LAVENDER,
+            font_size=60,
+            anchor_x="center",
+            font_name="Public Pixel"
+                                )
 
-        self.invincible = arcade.create_text_sprite(text="Invincibility",
-                                                    color=arcade.color.LAVENDER,
-                                                    font_size=40,
-                                                    font_name="Public Pixel")
+        self.invincible = arcade.create_text_sprite(
+            text="Invincibility",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                                   )
 
-        self.skip = arcade.create_text_sprite(text="Skip this level",
-                                              color=arcade.color.LAVENDER,
-                                              font_size=40,
-                                              font_name="Public Pixel")
+        self.skip = arcade.create_text_sprite(
+            text="Skip this level",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                             )
 
-        self.stop_ghost = arcade.create_text_sprite(text="Stop Ghosts",
-                                                    color=arcade.color.LAVENDER,
-                                                    font_size=40,
-                                                    font_name="Public Pixel")
+        self.stop_ghost = arcade.create_text_sprite(
+            text="Stop Ghosts",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                                   )
 
-        self.more_lives = arcade.create_text_sprite(text="Add a life",
-                                                    color=arcade.color.LAVENDER,
-                                                    font_size=40,
-                                                    font_name="Public Pixel")
+        self.more_lives = arcade.create_text_sprite(
+            text="Add a life",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                                   )
 
-        self.more_speed = arcade.create_text_sprite(text="Add speed",
-                                                    color=arcade.color.LAVENDER,
-                                                    font_size=40,
-                                                    font_name="Public Pixel")
+        self.more_speed = arcade.create_text_sprite(
+            text="Add speed",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                                   )
 
-        self.resume = arcade.create_text_sprite(text="Resume Game",
-                                                color=arcade.color.LAVENDER,
-                                                font_size=40,
-                                                font_name="Public Pixel")
-
+        self.resume = arcade.create_text_sprite(
+            text="Resume Game",
+            color=arcade.color.LAVENDER,
+            font_size=40,
+            font_name="Public Pixel"
+                                               )
 
         # Appends the buttons on a list
         self.button_list.append(self.invincible)

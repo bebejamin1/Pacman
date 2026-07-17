@@ -6,7 +6,7 @@ from mazegen.mazegenerator.mazegenerator import MazeGenerator
 
 from src.engine.game import Game
 from src.renderer.in_game.sprite import Object
-from src.engine import Game
+from src.engine import Game  # noqa on peu le supprimer  ???
 
 # ----| CONSTANTS |---- #
 PITCH_X = 4
@@ -25,6 +25,7 @@ BL_CORNER = f"{PATH}bl_corner_wall.png",
 BR_CORNER = f"{PATH}br_corner_wall.png"
 # --------------------- #
 
+
 class Maze():
     def __init__(self, config: dict[str, Any], lvl: int, game: Game) -> None:
         self.config = config
@@ -36,13 +37,13 @@ class Maze():
 
         self.width: int = self.levels[self.lvl].get("width")
         self.height: int = self.levels[self.lvl].get("height")
-        
+
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
         self.maze_grid: list[list[int]] = MazeGenerator(size=(self.width,
-                                                              self.height), 
+                                                              self.height),
                                                         perfect=False,
                                                         seed=self.seed).maze
 

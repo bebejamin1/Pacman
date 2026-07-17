@@ -6,7 +6,7 @@ from typing import Any
 
 from src.engine.algo import Cell, Greddy, Mode, Personality
 from src.engine.entities import Ghost, GhostState, Player
-from src.engine.level import Eaten, Level
+from src.engine.level import Eaten, Level  # noqa
 
 
 # *****************************************************************************
@@ -78,7 +78,7 @@ PERSONALITIES: tuple[Personality, ...] = (
 # *****************************************************************************
 # *                                   GAME                                    *
 # *                                                                           *
-# rules: Rules, 
+# rules: Rules,
 class Game:
     def __init__(self, first_maze: list[list[int]],
                  total_levels: int) -> None:
@@ -188,7 +188,7 @@ class Game:
 
     def _move_player(self, dt: float) -> None:
         self._player_clock += dt
-        # step = self.rules.player_step
+        step = self.rules.player_step
 
         if (self.cheats.speed_boost):
             step /= 2
@@ -222,88 +222,88 @@ class Game:
 
 # ================================ MOVE GHOSTS ================================
 
-    # def _move_ghosts(self, dt: float) -> None:
+    def _move_ghosts(self, dt: float) -> None:
 
-    #     if (self.cheats.freeze_ghosts):
-    #         return
-    #     self._ghost_clock += dt
-    #     step = self.rules.ghost_step
+        if (self.cheats.freeze_ghosts):
+            return
+        self._ghost_clock += dt
+        step = self.rules.ghost_step
 
-    #     if (self.mode is Mode.FRIGHTENED):
-    #         step *= 1.5
+        if (self.mode is Mode.FRIGHTENED):
+            step *= 1.5
 
-    #     while (self._ghost_clock >= step
-    #             and self.state is GameState.RUNNING):
-    #         self._ghost_clock -= step
-    #         lives_before = self.lives
+        while (self._ghost_clock >= step
+                and self.state is GameState.RUNNING):
+            self._ghost_clock -= step
+            lives_before = self.lives
 
-    #         for ghost in self.ghosts:
-    #             if (ghost.state is not GhostState.ACTIVE):
-    #                 continue
-    #             ghost.prev = ghost.pos
-    #             ghost.pos = ghost.brain.next_move(
-    #                 ghost.pos, self.player.pos,
-    #                 self.player.direction, self.mode)
-    #             self._check_collisions()
+            for ghost in self.ghosts:
+                if (ghost.state is not GhostState.ACTIVE):
+                    continue
+                ghost.prev = ghost.pos
+                ghost.pos = ghost.brain.next_move(
+                    ghost.pos, self.player.pos,
+                    self.player.direction, self.mode)
+                self._check_collisions()
 
-    #             if (self.lives != lives_before
-    #                     or self.state is not GameState.RUNNING):
-    #                 break
+                if (self.lives != lives_before
+                        or self.state is not GameState.RUNNING):
+                    break
 
 # ==================================== EAT ====================================
 
-    # def _eat(self, cell: Cell) -> None:
-    #     found = self.level.eat(cell)
-    #     if (found is Eaten.PACGUM):
-    #         self.score += self.rules.pacgum_points
-    #     elif (found is Eaten.SUPER):
-    #         self.score += self.rules.super_pacgum_points
-    #         self.mode = Mode.FRIGHTENED
-    #         self._frightened_left = self.rules.frightened_time
-    #     if (self.level.cleared):
-    #         self._win_level()
+    def _eat(self, cell: Cell) -> None:
+        found = self.level.eat(cell)
+        if (found is Eaten.PACGUM):
+            self.score += self.rules.pacgum_points
+        elif (found is Eaten.SUPER):
+            self.score += self.rules.super_pacgum_points
+            self.mode = Mode.FRIGHTENED
+            self._frightened_left = self.rules.frightened_time
+        if (self.level.cleared):
+            self._win_level()
 
 # ============================= CHECK COLLISIONS ==============================
 
-    # def _check_collisions(self) -> None:
+    def _check_collisions(self) -> None:
 
-    #     player = self.player
-    #     for ghost in self.ghosts:
-    #         if (ghost.state is not GhostState.ACTIVE):
-    #             continue
-    #         same = ghost.pos == player.pos
-    #         crossed = (ghost.pos == player.prev
-    #                    and ghost.prev == player.pos)
+        player = self.player
+        for ghost in self.ghosts:
+            if (ghost.state is not GhostState.ACTIVE):
+                continue
+            same = ghost.pos == player.pos
+            crossed = (ghost.pos == player.prev
+                       and ghost.prev == player.pos)
 
-    #         if not (same or crossed):
-    #             continue
+            if not (same or crossed):
+                continue
 
-    #         if (self.mode is Mode.FRIGHTENED):
-    #             self.score += self.rules.ghost_points
-    #             ghost.state = GhostState.EATEN
-    #             ghost.respawn_in = self.rules.ghost_respawn_time
+            if (self.mode is Mode.FRIGHTENED):
+                self.score += self.rules.ghost_points
+                ghost.state = GhostState.EATEN
+                ghost.respawn_in = self.rules.ghost_respawn_time
 
-    #         elif not (self.cheats.invincible):
-    #             self._lose_life()
-    #             return
+            elif not (self.cheats.invincible):
+                self._lose_life()
+                return
 
 # ================================= LOSE LIFE =================================
 
-    # def _lose_life(self) -> None:
+    def _lose_life(self) -> None:
 
-    #     self.lives -= 1
-    #     if (self.lives <= 0):
-    #         self.lives = 0
-    #         self.state = GameState.GAME_OVER
-    #         return
+        self.lives -= 1
+        if (self.lives <= 0):
+            self.lives = 0
+            self.state = GameState.GAME_OVER
+            return
 
-    #     self.mode = Mode.CHASE
-    #     self._frightened_left = 0.0
-    #     self.time_left = float(self.rules.level_max_time)
-    #     self.player.reset()
+        self.mode = Mode.CHASE
+        self._frightened_left = 0.0
+        self.time_left = float(self.rules.level_max_time)
+        self.player.reset()
 
-    #     for ghost in self.ghosts:
-    #         ghost.reset()
+        for ghost in self.ghosts:
+            ghost.reset()
 
 # ================================= WIN LEVEL =================================
 
