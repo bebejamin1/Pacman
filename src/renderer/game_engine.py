@@ -12,6 +12,7 @@ from src.renderer.ui.highscore_screen import HighscoreView
 from src.renderer.game_mode import GameView
 from src.renderer.ui.pause_screen import PauseView
 from src.renderer.ui.end_screen import EndView
+from src.renderer.ui.cheat_screen import CheatView
 
 # ----| CONSTANTS |---- #
 SCREEN_WIDTH = 1500
@@ -27,6 +28,9 @@ class GameEngine(arcade.Window):
         super().__init__(width=SCREEN_WIDTH, height=SCREEN_HEIGHT,
                          title=SCREEN_TITLE, resizable=False, 
                          center_window=True, antialiasing=True)
+        
+        self.win: bool = False
+        self.score: int = 0
 
     def set_view(self) -> None:
         self.menu_view = MenuView()
@@ -35,6 +39,7 @@ class GameEngine(arcade.Window):
         self.game_view = GameView()
         self.pause_view = PauseView()
         self.end_view = EndView()
+        self.cheat_view = CheatView()
 
     def switch_menu(self) -> None:
         self.show_view(self.menu_view)
@@ -53,6 +58,9 @@ class GameEngine(arcade.Window):
 
     def switch_end(self) -> None:
         self.show_view(self.end_view)
+
+    def switch_cheat(self) -> None:
+        self.show_view(self.cheat_view)
 
     def run(self) -> None:
         # Goes on the menu by default and run the game

@@ -78,6 +78,14 @@ class InstructionsView(arcade.View):
         self.text_list.append(rule3)
         self.text_list.append(rule4)
 
+        text = arcade.Text(text="Press ESCAPE to go back",
+                           x=self.width / 2, y=100,
+                           color=arcade.color.DARK_ORANGE,
+                           font_size=10, anchor_x="center", 
+                           font_name="Public Pixel")
+        
+        self.text_list.append(text)
+
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
             self.window.switch_menu()

@@ -24,6 +24,10 @@ class MenuView(arcade.View):
             print("Bye bye!")
             arcade.close_window()
 
+        # ---- debug end screen ---- #
+        if symbol == arcade.key.V:
+            self.window.switch_end()
+
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
         hit = arcade.get_sprites_at_point((x, y), self.button_list)

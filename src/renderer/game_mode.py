@@ -84,6 +84,9 @@ class GameView(arcade.View):
         if symbol == arcade.key.SPACE:
             self.window.switch_pause()
 
+        if symbol == arcade.key.L:
+            self.window.switch_cheat()
+
         elif symbol == arcade.key.UP or symbol == arcade.key.W:
             self.player.change_y += CHARACTER_SPEED
         elif symbol == arcade.key.DOWN or symbol == arcade.key.S:
