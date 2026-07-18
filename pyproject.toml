@@ -5,6 +5,10 @@ description = "Recreate the famous arcade game Pac-man! Noémie X Benjamin"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+<<<<<<< HEAD
+=======
+	"arcade>=3.3.3",
+>>>>>>> nono
 	"mazegenerator",
 	"uv>=0.11.28",
 ]

@@ -5,7 +5,11 @@
       "player_score": 2330
     },
     {
+<<<<<<< HEAD
       "player_name": "eggaa    2",
+=======
+      "player_name": "eggaa   2",
+>>>>>>> nono
       "player_score": 1810
     },
     {
@@ -41,4 +45,8 @@
       "player_score": 13
     }
   ]
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> nono

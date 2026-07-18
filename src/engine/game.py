@@ -6,7 +6,11 @@ from typing import Any
 
 from src.engine.algo import Cell, Greddy, Mode, Personality
 from src.engine.entities import Ghost, GhostState, Player
+<<<<<<< HEAD
 from src.engine.level import Eaten, Level
+=======
+from src.engine.level import Eaten, Level  # noqa
+>>>>>>> nono
 
 
 # *****************************************************************************
@@ -78,7 +82,10 @@ PERSONALITIES: tuple[Personality, ...] = (
 # *****************************************************************************
 # *                                   GAME                                    *
 # *                                                                           *
+<<<<<<< HEAD
 
+=======
+>>>>>>> nono
 class Game:
     def __init__(self, rules: Rules, first_maze: list[list[int]],
                  total_levels: int) -> None:

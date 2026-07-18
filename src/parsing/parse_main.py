@@ -4,7 +4,11 @@ import json
 
 from src.parsing.parse import parse_conf, parse_leaderbord, strip_json_comments
 
+<<<<<<< HEAD
 leaderbord_path: str = ""
+=======
+leaderbord_path = "data/leaderboard.json"
+>>>>>>> nono
 
 
 # *****************************************************************************
@@ -39,6 +43,10 @@ def leaderbord_update(player_name: str, player_score: int) -> dict:
         "player_name": player_name,
         "player_score": player_score
                           })
+<<<<<<< HEAD
+=======
+    print(leaderbord_path)
+>>>>>>> nono
 
     bord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
     bord = delete_over_ten(bord)
@@ -49,6 +57,33 @@ def leaderbord_update(player_name: str, player_score: int) -> dict:
 
 
 # *****************************************************************************
+<<<<<<< HEAD
+=======
+# *                             LEAD EXTRACT                                  *
+# *
+
+def leaderboard_extract(pathfile: str) -> str:
+    content = ""
+    i = 1
+
+    with open(pathfile, "r") as f:
+        bord = json.loads(strip_json_comments(f.read()))
+
+    for score, lst in bord.items():
+        for dict in lst:
+            if i < 10:
+                content += f"{i}.  "
+                f"{dict['player_name']}:\n{dict['player_score']}\n"
+            else:
+                content += f"{i}. "
+                f"{dict['player_name']}:\n{dict['player_score']}\n"
+            i += 1
+
+    return content
+
+
+# *****************************************************************************
+>>>>>>> nono
 # *                               PARSER                                      *
 # *                                                                           *
 
@@ -59,6 +94,10 @@ def parser(conf_path: str) -> dict:
     global leaderbord_path
 
     leaderbord_path = conf[0]
+<<<<<<< HEAD
+=======
+    print(leaderbord)
+>>>>>>> nono
 
     return {
         "conf": conf[1],

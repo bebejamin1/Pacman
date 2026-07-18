@@ -54,7 +54,17 @@ For `points_per_pacgum`, `points_per_super_pacgum` and `points_per_ghost` define
 -
 
 ### GitHub
+<<<<<<< HEAD
 -
+=======
+- [noemiepi](https://github.com/noemiepi/A-Maze-ing)
+
+- [Overtekk](https://github.com/Overtekk/PacMan)
+
+- [sousampere](https://github.com/sousampere/42_pacman)
+
+
+>>>>>>> nono
 ## Known Parsing Inconsistencies (TODO)
 
 Issues found in `src/parsing/` while comparing with the subject. Listed
