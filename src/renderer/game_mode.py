@@ -31,9 +31,9 @@ class GameView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.config: list[Any, dict[str, Any]] = parse_conf("data/config.json")
+        self.config: list[Any] = parse_conf("data/config.json")
         self.total_time: int = self.config[1].get("level_max_time")
-        self.lvl: dict[str, Any] = self.config[1].get("level")
+        self.lvl: list[dict[str, Any]] = self.config[1].get("level")
 
         self.player_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()

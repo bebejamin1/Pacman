@@ -14,14 +14,14 @@ PITCH_Y = 2
 
 PATH = "assets/maze/"
 
-WALL = f"{PATH}front_wall.png",
+WALL = f"{PATH}front_wall.png"
 
-LS_WALL = f"{PATH}ls_wall.png",
-RS_WALL = f"{PATH}rs_wall.png",
+LS_WALL = f"{PATH}ls_wall.png"
+RS_WALL = f"{PATH}rs_wall.png"
 
-TL_CORNER = f"{PATH}tl_corner_wall.png",
-TR_CORNER = f"{PATH}tr_corner_wall.png",
-BL_CORNER = f"{PATH}bl_corner_wall.png",
+TL_CORNER = f"{PATH}tl_corner_wall.png"
+TR_CORNER = f"{PATH}tr_corner_wall.png"
+BL_CORNER = f"{PATH}bl_corner_wall.png"
 BR_CORNER = f"{PATH}br_corner_wall.png"
 # --------------------- #
 
@@ -31,12 +31,12 @@ class Maze():
         self.config = config
         self.lvl = lvl
 
-        self.levels: list[dict[str, Any]] = self.config.get("level")
+        self.levels: list[dict[str, Any]] = self.config["level"]
 
-        self.seed: int = self.config.get("seed")
+        self.seed: int = self.config["seed"]
 
-        self.width: int = self.levels[self.lvl].get("width")
-        self.height: int = self.levels[self.lvl].get("height")
+        self.width: int = self.levels[self.lvl]["width"]
+        self.height: int = self.levels[self.lvl]["height"]
 
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
@@ -47,7 +47,7 @@ class Maze():
                                                         perfect=False,
                                                         seed=self.seed).maze
 
-    def generate_maze(self, game: Game) -> list[str]:
+    def generate_maze(self, game: Game) -> None:
         level = game.level
         for y in range(self.width):
             for x in range(self.height):

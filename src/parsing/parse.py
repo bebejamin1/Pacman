@@ -125,7 +125,7 @@ def parse_leaderbord(path: str) -> dict:
 
         else:
             with open(path, "r") as f:
-                leaderbord = json.loads(strip_json_comments(f.read()))
+                leaderbord: dict = json.loads(strip_json_comments(f.read()))
 
     except (FileNotFoundError, json.JSONDecodeError,
             ValueError, PermissionError):

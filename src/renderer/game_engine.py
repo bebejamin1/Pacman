@@ -6,7 +6,7 @@ from typing import Any
 
 from mazegen.mazegenerator.mazegenerator import MazeGenerator
 
-from src.engine.game import Game
+from src.engine.game import Game, Rules
 
 from src.renderer.ui.menu_screen import MenuView
 from src.renderer.ui.instructions_screen import InstructionsView
@@ -74,13 +74,13 @@ class GameEngine(arcade.Window):
 
     def new_game(self, config: dict[str, Any],
                  levels: list[dict[str, Any]]) -> Game:
-        lvl_width: int = levels[0].get("width")
-        lvl_height: int = levels[0].get("height")
-        seed: int = config.get("seed")
+        lvl_width: int = levels[0]["width"]
+        lvl_height: int = levels[0]["height"]
+        seed: int = config["seed"]
 
         nb_levels = len(levels)
         first_maze = self.new_maze((lvl_width, lvl_height), seed)
-        return Game(first_maze, nb_levels)
+        return Game(Rules.from_conf(config), first_maze, nb_levels)
 
     def new_maze(self, size: tuple[int, int], seed: int) -> list[list[int]]:
         maze: list[list[int]] = MazeGenerator(size=size, perfect=False,

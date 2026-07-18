@@ -13,14 +13,14 @@ class CheatView(arcade.View):
     """
     This class manages the pause menu.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
         )
 
         self._load()
 
-    def on_key_press(self, key, _modifiers):
+    def on_key_press(self, key: int, _modifiers: int) -> None:
         if key == arcade.key.ESCAPE:
             self.window.show_view(self.window.menu_view)
 
@@ -58,7 +58,7 @@ class CheatView(arcade.View):
                 self.window.switch_game()
                 print("Resume Game")
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
 
         # Draws the background

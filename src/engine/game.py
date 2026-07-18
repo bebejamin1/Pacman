@@ -78,19 +78,18 @@ PERSONALITIES: tuple[Personality, ...] = (
 # *****************************************************************************
 # *                                   GAME                                    *
 # *                                                                           *
-# rules: Rules,
 class Game:
-    def __init__(self, first_maze: list[list[int]],
+    def __init__(self, rules: Rules, first_maze: list[list[int]],
                  total_levels: int) -> None:
-        # self.rules = rules
+        self.rules = rules
         self.total_levels = max(1, total_levels)
         self.cheats = Cheats()
         self.score = 0
-        # self.lives = int(rules.lives)
+        self.lives = int(rules.lives)
         self.mode = Mode.CHASE
         self.state = GameState.RUNNING
         self.level_number = 0
-        # self.time_left = float(rules.level_max_time)
+        self.time_left = float(rules.level_max_time)
         self._frightened_left = 0.0
         self._player_clock = 0.0
         self._ghost_clock = 0.0
@@ -159,7 +158,7 @@ class Game:
 
         self.mode = Mode.CHASE
         self.state = GameState.RUNNING
-        # self.time_left = float(self.rules.level_max_time)
+        self.time_left = float(self.rules.level_max_time)
         self._frightened_left = 0.0
         self._player_clock = 0.0
         self._ghost_clock = 0.0

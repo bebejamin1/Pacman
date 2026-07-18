@@ -13,7 +13,7 @@ class EndView(arcade.View):
     """
     This class manages the finish screen (Game Over and Victory).
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
         )
@@ -30,7 +30,7 @@ class EndView(arcade.View):
         else:
             self._load_defeat()
 
-    def on_key_press(self, key, _modifiers):
+    def on_key_press(self, key: int, _modifiers: int) -> None:
         if key == arcade.key.ESCAPE:
             self.window.switch_menu()
 
@@ -104,7 +104,7 @@ class EndView(arcade.View):
             if key == arcade.key.ENTER:
                 self.window.switch_menu()
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
 
         # Draws the background
