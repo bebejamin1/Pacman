@@ -23,7 +23,7 @@ def strip_json_comments(text: str) -> str:
 
 def parse_conf(path: str) -> list:
 
-    os.system("clear")
+    # os.system("clear")
 
     checks = {  # a voir avec noemie pour les maxs
         "live": 2000, "pacgum_points": 2000, "super_pacgum_points": 2000,

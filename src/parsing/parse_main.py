@@ -39,6 +39,7 @@ def leaderbord_update(player_name: str, player_score: int) -> dict:
         "player_name": player_name,
         "player_score": player_score
                           })
+    print(leaderbord_path)
 
     bord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
     bord = delete_over_ten(bord)
@@ -83,6 +84,7 @@ def parser(conf_path: str) -> dict:
     global leaderbord_path
 
     leaderbord_path = conf[0]
+    print(leaderbord)
 
     return {
         "conf": conf[1],
