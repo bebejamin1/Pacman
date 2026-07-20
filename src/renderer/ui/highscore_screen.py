@@ -34,7 +34,7 @@ class HighscoreView(arcade.View):
 
         self.text = arcade.Text(text="Press ESCAPE to go back",
                                 x=self.width / 2, y=100,
-                                color=arcade.color.DARK_ORANGE,
+                                color=arcade.color.BRONZE,
                                 font_size=10, anchor_x="center",
                                 font_name="Public Pixel")
 

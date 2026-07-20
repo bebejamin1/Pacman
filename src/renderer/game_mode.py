@@ -5,8 +5,6 @@ import arcade
 
 from typing import Any
 
-from mazegen.mazegenerator.mazegenerator import MazeGenerator  # noqa never use
-
 from src.renderer.in_game.characters import Character  # noqa pareil
 from src.renderer.in_game.sprite import Object  # noqa pareil
 from src.renderer.in_game.maze import Maze
@@ -41,10 +39,11 @@ class GameView(arcade.View):
         self.enemy_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
-        # self._maze_generation()
+        self._maze_generation()
         self._collectibles()
         self._load_sprite()
         self._load_hud()
+
         # self.physic_engine = arcade.PhysicsEngineSimple(self.player,
         #                                                 self.wall_list)
 
@@ -55,7 +54,8 @@ class GameView(arcade.View):
                                                               self.width,
                                                               self.height))
 
-        # self._maze_generation()
+        # Draws the maze
+        self.maze.wall_list.draw()
 
         # Draws the HUD
         self.level_text.draw()
@@ -160,7 +160,8 @@ class GameView(arcade.View):
     def _maze_generation(self) -> None:
         self.game = self.window.new_game(self.config[1], self.lvl)
 
-        self.maze = Maze(self.config[1], 0, self.game)
+        self.maze = Maze(self.config[1], 0, self.game,
+                         self.width, self.height)
         self.maze.generate_maze(self.game)
 
     def _collectibles(self) -> None:
