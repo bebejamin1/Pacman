@@ -55,6 +55,7 @@ class GameView(arcade.View):
                                                               self.height))
 
         # Draws the maze
+        self.maze.ground_list.draw()
         self.maze.wall_list.draw()
 
         # Draws the HUD
@@ -79,6 +80,9 @@ class GameView(arcade.View):
         minutes = int(self.time_elapsed // 60)
         seconds = int(self.time_elapsed % 60)
         self.timer_text.text = f"{minutes:02d}:{seconds:02d}"
+
+        if "-" in self.timer_text.text:
+            self.window.switch_end()
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -160,9 +164,9 @@ class GameView(arcade.View):
     def _maze_generation(self) -> None:
         self.game = self.window.new_game(self.config[1], self.lvl)
 
-        self.maze = Maze(self.config[1], 0, self.game,
+        self.maze = Maze(self.config[1], 0, self.window.first_maze,
                          self.width, self.height)
-        self.maze.generate_maze(self.game)
+        self.maze.generate_maze()
 
     def _collectibles(self) -> None:
         self.pacgum: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()

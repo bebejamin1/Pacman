@@ -2,9 +2,6 @@ import arcade
 
 from typing import Any
 
-from mazegen.mazegenerator.mazegenerator import MazeGenerator
-
-from src.engine.game import Game
 from src.renderer.in_game.sprite import Object
 
 # ----| CONSTANTS |---- #
@@ -21,20 +18,20 @@ TR_CORNER = f"{PATH}tr_corner_wall.png"
 BL_CORNER = f"{PATH}bl_corner_wall.png"
 BR_CORNER = f"{PATH}br_corner_wall.png"
 
-SPRITE_SIZE = 32
+SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 1
 CHARACTER_SPEED = 2
 
-OFFSET_X = 2 * SPRITE_SIZE
+OFFSET_X = 5.6 * SPRITE_SIZE
 OFFSET_Y = 2 * SPRITE_SIZE
 # --------------------- #
 
-
 class Maze():
-    def __init__(self, config: dict[str, Any], lvl: int,
-                 game: Game, width: int, height: int) -> None:
+    def __init__(self, config: dict[str, Any], lvl_nb: int,
+                 lvl_info: list[list[int]], width: int, height: int) -> None:
         self.config = config
-        self.lvl = lvl
+        self.lvl_nb = lvl_nb
+        self.lvl_info = lvl_info
         self.width = width
         self.height = height
 
@@ -42,26 +39,21 @@ class Maze():
 
         self.seed: int = self.config["seed"]
 
-        self.lvl_width: int = self.levels[self.lvl]["width"]
-        self.lvl_height: int = self.levels[self.lvl]["height"]
+        self.lvl_width: int = self.levels[self.lvl_nb]["width"]
+        self.lvl_height: int = self.levels[self.lvl_nb]["height"]
 
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
-        self.maze_grid: list[list[int]] = MazeGenerator(size=(self.lvl_width,
-                                                              self.lvl_height),
-                                                        perfect=False,
-                                                        seed=self.seed).maze
-
-    def generate_maze(self, game: Game) -> None:
-        level = game.level
-        maze_width = 0
-        maze_height = 0
+    def generate_maze(self) -> None:
+        level = self.lvl_info
+        maze_width = self.lvl_width
+        maze_height = self.lvl_height
 
         for x in range(self.lvl_height):
             for y in range(self.lvl_width):
-                cell = level.maze[x][y]
+                cell = level[x][y]
                 screen_x = y * 2
                 screen_y = x * 2
 
@@ -89,7 +81,19 @@ class Maze():
             front_wall = Object(wall, 1)
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not found\033[0m")
-        front_wall.center_x = x * SPRITE_SIZE + (SPRITE_SIZE / 2) + OFFSET_X
-        front_wall.center_y = ((self.height - 100) - (y * SPRITE_SIZE) -
-                               (SPRITE_SIZE / 2) + OFFSET_Y)
+        # front_wall.center_x = x * (SPRITE_SIZE / 2) + (self.width / 3) - OFFSET_X
+        front_wall.center_x = (x * SPRITE_SIZE + (self.width / 2) -
+                               ((SPRITE_SIZE * 2 * (x / 2)) / 2) - OFFSET_X)
+        front_wall.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
+                               ((SPRITE_SIZE * 2 * (y / 2)) / 2) - OFFSET_Y)
         self.wall_list.append(front_wall)
+
+    def _build_ground(self, x: float, y: float) -> None:
+        try:
+            ground = Object(GROUND, 1)
+        except FileNotFoundError:
+            raise ValueError("\033[1;91mError: wall asset not found\033[0m")
+        ground.center_x = x * SPRITE_SIZE + (SPRITE_SIZE / 2) + OFFSET_X
+        ground.center_y = ((self.height - 100) - (y * SPRITE_SIZE) -
+                               (SPRITE_SIZE / 2) + OFFSET_Y)
+        self.ground_list.append(ground)

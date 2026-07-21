@@ -3,6 +3,8 @@
 import os
 import arcade
 
+from src.engine.game import Game, Cheats
+
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
@@ -15,8 +17,9 @@ class CheatView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
+        self.game: Game = self.window.game
 
         self._load()
 
@@ -30,7 +33,6 @@ class CheatView(arcade.View):
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
         hit = arcade.get_sprites_at_point((x, y), self.button_list)
-        click = 0  # noqa jamais utiliser suppr ou pas
 
         for sprite in hit:
             if sprite == self.invincible:
@@ -39,6 +41,7 @@ class CheatView(arcade.View):
 
             if sprite == self.skip:
                 arcade.play_sound(self.effect)
+                self.game.skip_level()
                 print("Skipping level")
 
             if sprite == self.stop_ghost:
@@ -47,6 +50,7 @@ class CheatView(arcade.View):
 
             if sprite == self.more_lives:
                 arcade.play_sound(self.effect)
+                self.game.add_life()
                 print("Adds a life")
 
             if sprite == self.more_speed:
@@ -117,7 +121,7 @@ class CheatView(arcade.View):
                                                    )
 
         self.skip = arcade.create_text_sprite(
-            text="Skip this level",
+            text="Skip Level",
             color=arcade.color.LAVENDER,
             font_size=40,
             font_name="Public Pixel"
@@ -138,7 +142,7 @@ class CheatView(arcade.View):
                                                    )
 
         self.more_speed = arcade.create_text_sprite(
-            text="Add speed",
+            text="Add Speed",
             color=arcade.color.LAVENDER,
             font_size=40,
             font_name="Public Pixel"
@@ -169,7 +173,6 @@ class CheatView(arcade.View):
                 arcade.load_texture(f"{PATH}maze_back.png")
 
             # Loads the music and effect
-            # self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
             # Loads the text

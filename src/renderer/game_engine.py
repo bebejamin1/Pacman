@@ -47,28 +47,35 @@ class GameEngine(arcade.Window):
         self.cheat_view = CheatView()
 
     def switch_menu(self) -> None:
+        # Goes on the main menu
         self.show_view(self.menu_view)
 
     def switch_instructions(self) -> None:
+        # Goes on the instruction menu
         self.show_view(self.instructions_view)
 
     def switch_highscore(self) -> None:
+        # Goes on the highscore menu
         self.show_view(self.highscore_view)
 
     def switch_game(self) -> None:
+        # Goes on the game
         self.show_view(self.game_view)
 
     def switch_pause(self) -> None:
+        # Goes on the pause menu
         self.show_view(self.pause_view)
 
     def switch_end(self) -> None:
+        # Goes on the end menu
         self.show_view(self.end_view)
 
     def switch_cheat(self) -> None:
+        # Goes on the cheat menu
         self.show_view(self.cheat_view)
 
     def run(self) -> None:
-        # Goes on the menu by default and run the game
+        # Goes on the main menu by default
         self.switch_menu()
         arcade.run()
 
@@ -77,12 +84,13 @@ class GameEngine(arcade.Window):
         lvl_width: int = levels[0]["width"]
         lvl_height: int = levels[0]["height"]
         seed: int = config["seed"]
-
         nb_levels = len(levels)
-        first_maze = self.new_maze((lvl_width, lvl_height), seed)
-        return Game(Rules.from_conf(config), first_maze, nb_levels)
 
-    def new_maze(self, size: tuple[int, int], seed: int) -> list[list[int]]:
-        maze: list[list[int]] = MazeGenerator(size=size, perfect=False,
-                                              seed=seed).maze
-        return maze
+        self.first_maze: list[list[int]] = MazeGenerator(size=(lvl_width,
+                                                               lvl_height),
+                                                         perfect=False,
+                                                         seed=seed).maze
+
+        self.game: Game = Game(Rules.from_conf(config),
+                               self.first_maze,
+                               nb_levels)

@@ -170,7 +170,7 @@ class EndView(arcade.View):
                                  )
 
         self.looser = arcade.Text(
-            text="Looser!",
+            text="Loser!",
             x=self.width / 2,
             y=self.height - 275,
             color=arcade.color.LAVENDER,
