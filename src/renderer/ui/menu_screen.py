@@ -1,7 +1,6 @@
 
 
 import os
-import time  # noqa Jamais utiliser
 import arcade
 
 # ----| CONSTANTS |---- #
@@ -21,7 +20,7 @@ class MenuView(arcade.View):
         )
 
         self._load()
-        self._play_music(self.music, 1.0, True)
+        self._play_music(True)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -107,6 +106,5 @@ class MenuView(arcade.View):
         except FileNotFoundError:
             raise ValueError("\033[1;91massets folder not found!\033[0m")
 
-    def _play_music(self, sound: str, volume: float,
-                    loop: bool = False) -> None:
+    def _play_music(self, loop: bool = False) -> None:
         arcade.play_sound(sound=self.music, loop=loop)

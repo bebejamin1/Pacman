@@ -39,8 +39,8 @@ To display the highscores in the menu, the file is parsed. In this file, the dif
 <img src="assets/README/leaderboard.png" />
 
 ## Maze Generation
-In the class `GameEngine`, the function `new_game()` creates the first game level that is then used inside the class `Maze` to draw the maze inside which the player will move.
-As for the next levels, `...`
+In the class `GameEngine`, the function `new_maze()` creates the game's levels that are used inside the class `Maze` to draw them.<br>
+The Game is created with the function `new_game()` that defines the first maze and the numbers of expected levels.
 
 ## Implementation
 *technical summary of your implementation*
@@ -60,7 +60,7 @@ The task realized during this project for each member are listed below:
   - Assets' creation
   - README
 
-A more detailed version of the management can be found `...`
+A more detailed version of the management can be found `[place it can be found]`
 
 ## Resources
 ### Notions

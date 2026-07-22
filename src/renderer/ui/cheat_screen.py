@@ -20,6 +20,7 @@ class CheatView(arcade.View):
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
         self.game: Game = self.window.game
+        self.cheats: Cheats = self.window.cheats
 
         self._load()
 
@@ -37,29 +38,56 @@ class CheatView(arcade.View):
         for sprite in hit:
             if sprite == self.invincible:
                 arcade.play_sound(self.effect)
+
+                if self.cheats.invincible is False:
+                    self.cheats.invincible = True
+
+                else:
+                    self.cheats.invincible = False
+
                 print("Invicibility activated")
 
             if sprite == self.skip:
                 arcade.play_sound(self.effect)
+
                 self.game.skip_level()
+
                 print("Skipping level")
 
             if sprite == self.stop_ghost:
                 arcade.play_sound(self.effect)
+
+                if self.cheats.freeze_ghosts is False:
+                    self.cheats.freeze_ghosts = True
+
+                else:
+                    self.cheats.freeze_ghosts = False
+
                 print("Stopping the ghosts")
 
             if sprite == self.more_lives:
                 arcade.play_sound(self.effect)
+
                 self.game.add_life()
+
                 print("Adds a life")
 
             if sprite == self.more_speed:
                 arcade.play_sound(self.effect)
+
+                if self.cheats.speed_boost is False:
+                    self.cheats.speed_boost = True
+
+                else:
+                    self.cheats.speed_boost = False
+
                 print("Adds speed")
 
             if sprite == self.resume:
                 arcade.play_sound(self.effect)
+
                 self.window.switch_game()
+
                 print("Resume Game")
 
     def on_draw(self) -> None:

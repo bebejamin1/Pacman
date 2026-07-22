@@ -6,7 +6,7 @@ from typing import Any
 
 from mazegen.mazegenerator.mazegenerator import MazeGenerator
 
-from src.engine.game import Game, Rules
+from src.engine.game import Game, Rules, Cheats
 
 from src.renderer.ui.menu_screen import MenuView
 from src.renderer.ui.instructions_screen import InstructionsView
@@ -33,6 +33,8 @@ class GameEngine(arcade.Window):
             title=SCREEN_TITLE, resizable=False,
             center_window=True, antialiasing=True
                         )
+
+        self.cheats: Cheats = Cheats()
 
         self.win: bool = False
         self.score: int = 0
@@ -74,7 +76,7 @@ class GameEngine(arcade.Window):
         # Goes on the cheat menu
         self.show_view(self.cheat_view)
 
-    def run(self) -> None:
+    def start_game(self) -> None:
         # Goes on the main menu by default
         self.switch_menu()
         arcade.run()
@@ -86,11 +88,14 @@ class GameEngine(arcade.Window):
         seed: int = config["seed"]
         nb_levels = len(levels)
 
-        self.first_maze: list[list[int]] = MazeGenerator(size=(lvl_width,
-                                                               lvl_height),
-                                                         perfect=False,
-                                                         seed=seed).maze
+        self.first_maze: list[list[int]] = self.new_maze((lvl_width,
+                                                          lvl_height),
+                                                          seed)
 
-        self.game: Game = Game(Rules.from_conf(config),
-                               self.first_maze,
-                               nb_levels)
+        self.game: Game = Game(Rules.from_conf(config), self.first_maze, nb_levels)
+
+    def new_maze(self, size: tuple[int, int], seed: int = 0) -> list[list[int]]:
+        maze: list[list[int]] = MazeGenerator(size=size,
+                                              perfect=False,
+                                              seed=seed).maze
+        return maze

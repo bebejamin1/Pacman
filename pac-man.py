@@ -29,7 +29,7 @@ def main() -> None:
     engine.set_view()
 
     # Starts the game
-    engine.run()
+    engine.start_game()
 
 
 if __name__ == "__main__":

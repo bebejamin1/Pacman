@@ -3,6 +3,8 @@
 import os
 import arcade
 
+from src.parsing.parse_main import leaderbord_update
+
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
@@ -18,8 +20,8 @@ class EndView(arcade.View):
         self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
         )
 
-        self.win = self.window.win
-        self.final_score = self.window.score
+        self.win: bool = self.window.win
+        self.final_score: int = self.window.score
         self.player: str = ""
 
         self.full_name: list[arcade.Text] = []
@@ -102,6 +104,7 @@ class EndView(arcade.View):
                     self.full_name.pop()
 
             if key == arcade.key.ENTER:
+                leaderbord_update(self.player, self.final_score)
                 self.window.switch_menu()
 
     def on_draw(self) -> None:
