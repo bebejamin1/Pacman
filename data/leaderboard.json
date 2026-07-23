@@ -5,16 +5,28 @@
       "player_score": 2330
     },
     {
-<<<<<<< HEAD
-      "player_name": "eggaa    2",
-=======
       "player_name": "eggaa   2",
->>>>>>> nono
       "player_score": 1810
     },
     {
       "player_name": "gsgsg",
       "player_score": 1490
+    },
+    {
+      "player_name": "test",
+      "player_score": 670
+    },
+    {
+      "player_name": "testbis",
+      "player_score": 666
+    },
+    {
+      "player_name": "jsp23",
+      "player_score": 666
+    },
+    {
+      "player_name": "hi",
+      "player_score": 458
     },
     {
       "player_name": "fagagha",
@@ -27,26 +39,6 @@
     {
       "player_name": "55gjikas",
       "player_score": 13
-    },
-    {
-      "player_name": "55gjikas",
-      "player_score": 13
-    },
-    {
-      "player_name": "55gjikas",
-      "player_score": 13
-    },
-    {
-      "player_name": "55gjikas",
-      "player_score": 13
-    },
-    {
-      "player_name": "55gjikas",
-      "player_score": 13
     }
   ]
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> nono

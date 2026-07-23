@@ -48,7 +48,7 @@ if __name__ == "__main__":
     engine.set_view()
 
     # Starts the game
-    engine.run()
+    engine.start_game()
 
 
 if __name__ == "__main__":

@@ -72,11 +72,11 @@ def leaderboard_extract(pathfile: str) -> str:
     for score, lst in bord.items():
         for dict in lst:
             if i < 10:
-                content += f"{i}.  "
-                f"{dict['player_name']}:\n{dict['player_score']}\n"
+                content += f"{i}.  " \
+                           f"{dict['player_name']}:\n{dict['player_score']}\n"
             else:
-                content += f"{i}. "
-                f"{dict['player_name']}:\n{dict['player_score']}\n"
+                content += f"{i}. " \
+                           f"{dict['player_name']}:\n{dict['player_score']}\n"
             i += 1
 
     return content

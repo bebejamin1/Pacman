@@ -32,13 +32,11 @@ class HighscoreView(arcade.View):
         except FileNotFoundError:
             raise ValueError("\033[1;91mBackground file not found!\033[0m")
 
-        self.text = arcade.Text(text="Press ESCAPE to go back",
-                                x=self.width / 2, y=100,
-                                color=arcade.color.DARK_ORANGE,
-                                font_size=10, anchor_x="center",
-                                font_name="Public Pixel")
-
-        self.leaderboard()
+        self.instruction = arcade.Text(text="Press ESCAPE to go back",
+                                       x=self.width / 2, y=100,
+                                       color=arcade.color.BRONZE,
+                                       font_size=10, anchor_x="center",
+                                       font_name="Public Pixel")
 
     def leaderboard(self) -> None:
         y = 800
@@ -79,4 +77,8 @@ class HighscoreView(arcade.View):
         for text in self.text_list:
             text.draw()
 
-        self.text.draw()
+        self.instruction.draw()
+
+    def on_show_view(self) -> None:
+        self.text_list.clear()
+        self.leaderboard()
