@@ -36,16 +36,12 @@ class GameEngine(arcade.Window):
 
         self.cheats: Cheats = Cheats()
 
-        self.win: bool = False
-        self.score: int = 0
-
     def set_view(self) -> None:
         self.menu_view = MenuView()
         self.instructions_view = InstructionsView()
         self.highscore_view = HighscoreView()
         self.game_view = GameView()
         self.pause_view = PauseView()
-        self.end_view = EndView()
         self.cheat_view = CheatView()
 
     def switch_menu(self) -> None:
@@ -68,9 +64,9 @@ class GameEngine(arcade.Window):
         # Goes on the pause menu
         self.show_view(self.pause_view)
 
-    def switch_end(self) -> None:
+    def switch_end(self, win: bool, score: int) -> None:
         # Goes on the end menu
-        self.show_view(self.end_view)
+        self.show_view(EndView(win, score))
 
     def switch_cheat(self) -> None:
         # Goes on the cheat menu
@@ -90,11 +86,15 @@ class GameEngine(arcade.Window):
 
         self.first_maze: list[list[int]] = self.new_maze((lvl_width,
                                                           lvl_height),
-                                                          seed)
+                                                         seed)
 
-        self.game: Game = Game(Rules.from_conf(config), self.first_maze, nb_levels)
+        self.game: Game = Game(Rules.from_conf(config),
+                               self.first_maze, nb_levels)
 
-    def new_maze(self, size: tuple[int, int], seed: int = 0) -> list[list[int]]:
+        return self.game
+
+    def new_maze(self, size: tuple[int, int],
+                 seed: int = 0) -> list[list[int]]:
         maze: list[list[int]] = MazeGenerator(size=size,
                                               perfect=False,
                                               seed=seed).maze

@@ -5,15 +5,13 @@ import arcade
 
 from typing import Any
 
-from src.renderer.in_game.characters import Character
-from src.renderer.in_game.sprite import Object  # noqa pareil
 from src.renderer.in_game.maze import Maze
+from src.renderer.in_game.characters import Character
 
 from src.parsing.parse import parse_conf
 
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
-PLAYER_PATH = "assets/player/"
 MAZE_PATH = "assets/maze/"
 
 CHARACTER_SIZE = 0.65
@@ -28,23 +26,26 @@ class GameView(arcade.View):
     def __init__(self) -> None:
         super().__init__()
         self.config: list[Any] = parse_conf("data/config.json")
+        self.seed: int = self.config[1].get("seed")
         self.total_time: int = self.config[1].get("level_max_time")
         self.lvl: list[dict[str, Any]] = self.config[1].get("level")
+        self.lvl_nb: int = 0
 
         self.rules: dict[str, Any] = self.config[1]
+        self.lives: int = self.rules.get("live")
+        self.flee: bool = False
 
         self.speed: float = 2
-
-        self.player_list: arcade.SpriteList[arcade.Sprite] = \
-            arcade.SpriteList()
-
-        self.enemy_list: arcade.SpriteList[arcade.Sprite] = \
-            arcade.SpriteList()
 
         self._maze_generation()
         self._collectibles()
         self._load_sprite()
         self._load_hud()
+
+        self.player: Character = self.maze.player
+
+        self.enemy_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
@@ -60,9 +61,10 @@ class GameView(arcade.View):
         self.maze.ground_list.draw()
         self.maze.wall_list.draw()
         self.maze.pacgum_list.draw()
+        self.maze.super_pac.draw()
 
         # Draws entities
-        self.player_list.draw()
+        self.maze.player_list.draw()
 
         # Draws the HUD
         self.level_text.draw()
@@ -72,6 +74,9 @@ class GameView(arcade.View):
         self.text.draw()
 
     def on_update(self, delta_time: float) -> None:
+        # Updates entities
+        self.maze.player_list.update()
+
         # Makes the physics of the game
         self.physic_engine.update()
 
@@ -82,14 +87,45 @@ class GameView(arcade.View):
         pac_hit = arcade.check_for_collision_with_list(self.player,
                                                        self.maze.pacgum_list)
         if pac_hit:
-            self.score += self.rules.get("pacgum_points")
-            self.score_text.text = self.score
-        # sup_pac_hit = arcade.check_for_collision_with_list(self.player,
-        #                                                    self.maze.super_pac)
+            for p in pac_hit:
+                self.score += self.rules.get("pacgum_points")
+                self.score_text.text = self.score
+                p.kill()
+
+                if len(self.maze.pacgum_list) == 0:
+                    if len(self.lvl) >= self.lvl_nb:
+                        self.lvl_nb += 1
+
+                        lvl_width: int = self.lvl[self.lvl_nb]["width"]
+                        lvl_height: int = self.lvl[self.lvl_nb]["height"]
+
+                        self.next_level(lvl_width, lvl_height)
+
+                    else:
+                        self.window.switch_end(True, self.score)
+
+        sup_pac_hit = arcade.check_for_collision_with_list(self.player,
+                                                           self.maze.super_pac)
+        if sup_pac_hit:
+            for p in sup_pac_hit:
+                self.score += self.rules.get("super_pacgum_points")
+                self.score_text.text = self.score
+                p.kill()
+                self.flee = True
 
         # Checks the collisions with other entities
         # enemy_hit = arcade.check_for_collision_with_list(self.player,
         #                                                  self.enemy)
+        # if enemy_hit:
+        #     if self.flee is True:
+        #         self.score += self.rules.get("ghost_points")
+        #         self.score_text.text = self.score
+        #     else:
+        #         self.lives -= 1
+        #         if self.lives == 0:
+        #             self.window.switch_end()
+        #         else:
+        #             restart level function
 
         # Updates the countdown
         self.time_elapsed -= delta_time
@@ -98,7 +134,7 @@ class GameView(arcade.View):
         self.timer_text.text = f"{minutes:02d}:{seconds:02d}"
 
         if "-" in self.timer_text.text:
-            self.window.switch_end()
+            self.window.switch_end(False, self.score)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -134,7 +170,7 @@ class GameView(arcade.View):
     def _load_hud(self) -> None:
         self.life = self.config[1].get("live")
         self.score = 0
-        self.level = self.lvl[0].get("name")
+        self.level = self.lvl[self.lvl_nb].get("name")
 
         self.level_text = arcade.Text(
             text=f"{self.level}",
@@ -180,9 +216,21 @@ class GameView(arcade.View):
     def _maze_generation(self) -> None:
         self.game = self.window.new_game(self.config[1], self.lvl)
 
-        self.maze = Maze(self.config[1], 0, self.window.first_maze,
+        self.maze: Maze = Maze(self.config[1], self.lvl_nb,
+                               self.window.first_maze,
+                               self.width, self.height)
+        self.maze.generate_maze()
+
+    def next_level(self, width: int, height: int) -> None:
+        self.next_maze: list[list[int]] = self.window.new_maze((width,
+                                                                height),
+                                                               self.seed)
+
+        self.maze = Maze(self.config[1], self.lvl_nb, self.next_maze,
                          self.width, self.height)
         self.maze.generate_maze()
+
+        self.time_elapsed = self.config[1].get("level_max_time")
 
     def _collectibles(self) -> None:
         self.pacgum: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
@@ -198,39 +246,7 @@ class GameView(arcade.View):
             self.wall = arcade.load_texture(f"{MAZE_PATH}front_wall.png")
             self.ground = arcade.load_texture(f"{MAZE_PATH}ground.png")
 
-            self._load_player()
+            self.maze._load_player()
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
-
-    def _load_player(self) -> None:
-        try:
-            if not os.path.exists(PLAYER_PATH):
-                raise ValueError
-
-            char_walk_anim = [
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk1.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk2.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk3.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk4.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk5.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk6.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk7.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk8.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk9.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk10.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk11.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk12.png"),
-            ]
-
-            self.player = Character(f"{PLAYER_PATH}/walk/walk1.png",
-                                    CHARACTER_SIZE / 2, char_walk_anim)
-
-            self.player.center_x = self.window.width / 2
-            self.player.center_y = self.window.height / 2
-
-            self.player_list.append(self.player)
-
-        except FileNotFoundError:
-            raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
-

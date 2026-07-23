@@ -111,8 +111,8 @@ class Game:
 # ================================ NEXT LEVEL =================================
 
     def next_level(self, maze: list[list[int]]) -> None:
-        if (self.state is GameState.LEVEL_WON):
-            self._load(maze)
+        # if (self.state is GameState.LEVEL_WON):
+        self._load(maze)
 
 # ================================ SKIP LEVEL =================================
 
