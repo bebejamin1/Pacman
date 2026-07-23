@@ -90,11 +90,14 @@ class GameEngine(arcade.Window):
 
         self.first_maze: list[list[int]] = self.new_maze((lvl_width,
                                                           lvl_height),
-                                                          seed)
+                                                         seed)
 
-        self.game: Game = Game(Rules.from_conf(config), self.first_maze, nb_levels)
+        self.game: Game = Game(Rules.from_conf(config), self.first_maze,
+                               nb_levels)
 
-    def new_maze(self, size: tuple[int, int], seed: int = 0) -> list[list[int]]:
+    def new_maze(self, size: tuple[int, int], seed: int = 0
+                 ) -> list[list[int]]:
+
         maze: list[list[int]] = MazeGenerator(size=size,
                                               perfect=False,
                                               seed=seed).maze

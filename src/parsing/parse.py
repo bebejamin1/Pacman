@@ -23,11 +23,7 @@ def strip_json_comments(text: str) -> str:
 
 def parse_conf(path: str) -> list:
 
-<<<<<<< HEAD
-    os.system("clear")
-=======
     # os.system("clear")
->>>>>>> nono
 
     checks = {  # a voir avec noemie pour les maxs
         "live": 2000, "pacgum_points": 2000, "super_pacgum_points": 2000,
@@ -119,10 +115,6 @@ def parse_conf(path: str) -> list:
 # *                                                                           *
 
 def parse_leaderbord(path: str) -> dict:
-<<<<<<< HEAD
-    leaderbord: dict
-=======
->>>>>>> nono
     try:
         if not (path.endswith(".json")):
             raise ValueError("The leaderboard must be a .json file.")
@@ -133,11 +125,7 @@ def parse_leaderbord(path: str) -> dict:
 
         else:
             with open(path, "r") as f:
-<<<<<<< HEAD
-                leaderbord = json.loads(strip_json_comments(f.read()))
-=======
                 leaderbord: dict = json.loads(strip_json_comments(f.read()))
->>>>>>> nono
 
     except (FileNotFoundError, json.JSONDecodeError,
             ValueError, PermissionError):

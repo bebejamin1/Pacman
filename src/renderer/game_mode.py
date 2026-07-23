@@ -233,4 +233,3 @@ class GameView(arcade.View):
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
-
