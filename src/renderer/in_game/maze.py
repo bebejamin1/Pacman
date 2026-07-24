@@ -13,19 +13,18 @@ PLAYER_PATH = "assets/player/"
 PACGUM = f"{PATH_PAC}pacgum.png"
 SUPER_PAC = f"{PATH_PAC}super_pacgum.png"
 
-WALL = f"{PATH}front_wall.png"
+WALL = f"{PATH}wall.png"
 GROUND = f"{PATH}ground.png"
 
-LS_WALL = f"{PATH}ls_wall.png"
-RS_WALL = f"{PATH}rs_wall.png"
+SIDE_WALL = f"{PATH}side_wall.png"
 
-TL_CORNER = f"{PATH}tl_corner_wall.png"
-TR_CORNER = f"{PATH}tr_corner_wall.png"
-BL_CORNER = f"{PATH}bl_corner_wall.png"
-BR_CORNER = f"{PATH}br_corner_wall.png"
+TOP_CORNER = f"{PATH}top_corner.png"
+BOT_CORNER = f"{PATH}bot_corner.png"
+IN_CORNER = f"{PATH}corner_wall.png"
+DEAD_END = f"{PATH}dead_end.png"
 
 SPRITE_SIZE = 32 * 2
-CHARACTER_SIZE = 0.65
+CHARACTER_SIZE = 0.45
 # --------------------- #
 
 
@@ -77,20 +76,27 @@ class Maze():
                 if maze_height < screen_y:
                     maze_height = screen_y
 
+                # Places the walls
                 if cell & 1:
-                    self._build_walls(screen_x, screen_y - 1, WALL)
+                    self._build_walls(screen_x, screen_y - 1, WALL, 0)
                 if cell & 2:
-                    self._build_walls(screen_x + 1, screen_y, LS_WALL)
+                    self._build_walls(screen_x + 1, screen_y, WALL, 90)
                 if cell & 4:
-                    self._build_walls(screen_x, screen_y + 1, WALL)
+                    self._build_walls(screen_x, screen_y + 1, WALL, 180)
                 if cell & 8:
-                    self._build_walls(screen_x - 1, screen_y, RS_WALL)
+                    self._build_walls(screen_x - 1, screen_y, WALL, -90)
+                if cell == 15:
+                    self._build_walls(screen_x, screen_y, WALL, 0)
 
-                self._build_walls(screen_x - 1, screen_y - 1, WALL)
-                self._build_walls(screen_x - 1, screen_y + 1, WALL)
-                self._build_walls(screen_x + 1, screen_y + 1, WALL)
-                self._build_walls(screen_x + 1, screen_y - 1, WALL)
-
+                if y == 0:
+                    self._build_walls(screen_x - 1, screen_y - 1, WALL, -90)
+                else:
+                    self._build_walls(screen_x - 1, screen_y - 1, WALL, 0)
+                self._build_walls(screen_x - 1, screen_y + 1, WALL, 180)
+                self._build_walls(screen_x + 1, screen_y + 1, WALL, 90)
+                self._build_walls(screen_x + 1, screen_y - 1, WALL, 90)
+                
+                # Places the pacgums and super pacgums
                 if cell != 15:
                     if screen_x == 0 and screen_y == 0:
                         self._build_super_pacgum(screen_x, screen_y)
@@ -110,19 +116,25 @@ class Maze():
                     else:
                         self._build_pacgum(screen_x, screen_y)
 
+                # Places the ground
                 self._build_ground(screen_x, screen_y)
-                self._build_ground(screen_x - 1, screen_y)
-                self._build_ground(screen_x + 1, screen_y)
                 self._build_ground(screen_x, screen_y - 1)
                 self._build_ground(screen_x, screen_y + 1)
-                self._build_ground(screen_x - 1, screen_y - 1)
-                self._build_ground(screen_x - 1, screen_y + 1)
-                self._build_ground(screen_x + 1, screen_y + 1)
-                self._build_ground(screen_x + 1, screen_y - 1)
 
-    def _build_walls(self, x: float, y: float, wall: str) -> None:
+                if y != 0:
+                    self._build_ground(screen_x - 1, screen_y)
+                    self._build_ground(screen_x - 1, screen_y - 1)
+                    self._build_ground(screen_x - 1, screen_y + 1)
+                
+                if y != self.lvl_height - 1:
+                    self._build_ground(screen_x + 1, screen_y)
+                    self._build_ground(screen_x + 1, screen_y - 1)
+                    self._build_ground(screen_x + 1, screen_y + 1)
+
+    def _build_walls(self, x: float, y: float, 
+                     wall: str, angle: float) -> None:
         try:
-            front_wall = Object(wall, 1)
+            front_wall = Object(wall, 1, angle)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not found\033[0m")
@@ -133,12 +145,13 @@ class Maze():
         front_wall.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
                                ((SPRITE_SIZE * 2 * (y / 2)) / 2) -
                                self.offset_y)
+        front_wall.angle = angle
 
         self.wall_list.append(front_wall)
 
     def _build_ground(self, x: float, y: float) -> None:
         try:
-            ground = Object(GROUND, 1)
+            ground = Object(GROUND, 1, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
@@ -155,7 +168,7 @@ class Maze():
 
     def _build_pacgum(self, x: float, y: float) -> None:
         try:
-            pacgum = Object(PACGUM, 0.5)
+            pacgum = Object(PACGUM, 0.5, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
@@ -172,7 +185,7 @@ class Maze():
 
     def _build_super_pacgum(self, x: float, y: float) -> None:
         try:
-            pacgum = Object(SUPER_PAC, 1)
+            pacgum = Object(SUPER_PAC, 1, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"

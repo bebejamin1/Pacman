@@ -20,6 +20,8 @@ from src.renderer.ui.cheat_screen import CheatView
 SCREEN_WIDTH = 1500
 SCREEN_HEIGHT = 1080
 SCREEN_TITLE = "PAC-MAN by BN🍪"
+
+MUSIC_PATH = "assets/sound/"
 # --------------------- #
 
 
@@ -35,6 +37,10 @@ class GameEngine(arcade.Window):
                         )
 
         self.cheats: Cheats = Cheats()
+        
+        # Loads the music and effect
+        self.menu_music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
+        self.game_music = arcade.load_sound(f"{MUSIC_PATH}music/game.mp3")
 
     def set_view(self) -> None:
         self.menu_view = MenuView()
@@ -46,7 +52,9 @@ class GameEngine(arcade.Window):
 
     def switch_menu(self) -> None:
         # Goes on the main menu
+        self.play_music(self.game_music, True, False)
         self.show_view(self.menu_view)
+        self.play_music(self.menu_music, True)
 
     def switch_instructions(self) -> None:
         # Goes on the instruction menu
@@ -58,7 +66,9 @@ class GameEngine(arcade.Window):
 
     def switch_game(self) -> None:
         # Goes on the game
+        self.play_music(self.menu_music, True, False)
         self.show_view(self.game_view)
+        self.play_music(self.game_music, True)
 
     def switch_pause(self) -> None:
         # Goes on the pause menu
@@ -66,6 +76,7 @@ class GameEngine(arcade.Window):
 
     def switch_end(self, win: bool, score: int) -> None:
         # Goes on the end menu
+        self.play_music(self.game_music, True, False)
         self.show_view(EndView(win, score))
 
     def switch_cheat(self) -> None:
@@ -99,3 +110,10 @@ class GameEngine(arcade.Window):
                                               perfect=False,
                                               seed=seed).maze
         return maze
+
+    def play_music(self, music: arcade.Sound , loop: bool = False,
+                    play: bool = True) -> None:
+        if play is True:
+            self.play = arcade.play_sound(sound=music, loop=loop)
+        if play is False:
+            arcade.stop_sound(self.play)

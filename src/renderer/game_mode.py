@@ -13,6 +13,7 @@ from src.parsing.parse import parse_conf
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MAZE_PATH = "assets/maze/"
+MUSIC_PATH = "assets/sound/"
 
 CHARACTER_SIZE = 0.65
 # --------------------- #
@@ -241,9 +242,11 @@ class GameView(arcade.View):
             if not os.path.exists("assets/"):
                 raise ValueError
 
+            # Loads the background
             self.background = arcade.load_texture(f"{PATH}maze_back.png")
 
-            self.wall = arcade.load_texture(f"{MAZE_PATH}front_wall.png")
+            # Loads the maze components and the player
+            self.wall = arcade.load_texture(f"{MAZE_PATH}wall.png")
             self.ground = arcade.load_texture(f"{MAZE_PATH}ground.png")
 
             self.maze._load_player()
