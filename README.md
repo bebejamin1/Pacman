@@ -54,6 +54,7 @@ The task realized during this project for each member are listed below:
 - [bbeaurai | bebejamin1](https://github.com/bebejamin1)
   - Parsing
   - Leaderboard
+  - Ghosts algorithm
 
 - [npillet | noemiepi](https://github.com/noemiepi)
   - User interfaces (every views)

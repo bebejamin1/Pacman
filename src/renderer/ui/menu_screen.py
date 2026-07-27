@@ -20,9 +20,14 @@ class MenuView(arcade.View):
         )
 
         self._load()
-        self._play_music(True)
+        self.window.play_music(self.menu_music, True)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        if symbol == arcade.key.ENTER:
+            arcade.play_sound(self.effect)
+            self.window.switch_game()
+            print("Start Game!")
+
         if symbol == arcade.key.ESCAPE:
             print("Bye bye!")
             arcade.close_window()
@@ -89,7 +94,8 @@ class MenuView(arcade.View):
                 arcade.load_texture(f"{PATH}main_menu.png")
 
             # Loads the music and effect
-            self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
+            self.menu_music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
+            self.game_music = arcade.load_sound(f"{MUSIC_PATH}music/game.mp3")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
             # Loads the buttons' sprites and put them in a list
@@ -105,6 +111,3 @@ class MenuView(arcade.View):
 
         except FileNotFoundError:
             raise ValueError("\033[1;91massets folder not found!\033[0m")
-
-    def _play_music(self, loop: bool = False) -> None:
-        arcade.play_sound(sound=self.music, loop=loop)

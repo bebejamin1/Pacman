@@ -5,7 +5,7 @@
   "super_pacgum_points": 50,
   "ghost_points": 200,
   "seed": 42,
-  "level_max_time": 90,
+  "level_max_time": 150,
   "level": [
     {
       "name": "Level 1",
