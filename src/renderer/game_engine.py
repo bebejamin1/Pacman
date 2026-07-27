@@ -37,7 +37,7 @@ class GameEngine(arcade.Window):
                         )
 
         self.cheats: Cheats = Cheats()
-        
+
         # Loads the music and effect
         self.menu_music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
         self.game_music = arcade.load_sound(f"{MUSIC_PATH}music/game.mp3")
@@ -111,8 +111,8 @@ class GameEngine(arcade.Window):
                                               seed=seed).maze
         return maze
 
-    def play_music(self, music: arcade.Sound , loop: bool = False,
-                    play: bool = True) -> None:
+    def play_music(self, music: arcade.Sound, loop: bool = False,
+                   play: bool = True) -> None:
         if play is True:
             self.play = arcade.play_sound(sound=music, loop=loop)
         if play is False:

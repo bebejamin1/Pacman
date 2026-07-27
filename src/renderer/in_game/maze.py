@@ -95,7 +95,7 @@ class Maze():
                 self._build_walls(screen_x - 1, screen_y + 1, WALL, 180)
                 self._build_walls(screen_x + 1, screen_y + 1, WALL, 90)
                 self._build_walls(screen_x + 1, screen_y - 1, WALL, 90)
-                
+
                 # Places the pacgums and super pacgums
                 if cell != 15:
                     if screen_x == 0 and screen_y == 0:
@@ -125,13 +125,13 @@ class Maze():
                     self._build_ground(screen_x - 1, screen_y)
                     self._build_ground(screen_x - 1, screen_y - 1)
                     self._build_ground(screen_x - 1, screen_y + 1)
-                
+
                 if y != self.lvl_height - 1:
                     self._build_ground(screen_x + 1, screen_y)
                     self._build_ground(screen_x + 1, screen_y - 1)
                     self._build_ground(screen_x + 1, screen_y + 1)
 
-    def _build_walls(self, x: float, y: float, 
+    def _build_walls(self, x: float, y: float,
                      wall: str, angle: float) -> None:
         try:
             front_wall = Object(wall, 1, angle)
@@ -237,7 +237,7 @@ class Maze():
     #         ]
 
     #     except FileNotFoundError:
-    #         raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
+    #         raise ValueError("\033[1;91mError: Assets folder not found\033[0m")  # noqa
 
     #     self.enemy = Character(f"{PLAYER_PATH}/walk/walk1.png",
     #                             CHARACTER_SIZE / 2, enemy_walk_anim)
