@@ -24,7 +24,7 @@ IN_CORNER = f"{PATH}corner_wall.png"
 DEAD_END = f"{PATH}dead_end.png"
 
 SPRITE_SIZE = 32 * 2
-CHARACTER_SIZE = 0.45
+CHARACTER_SIZE = 0.6
 # --------------------- #
 
 
@@ -45,10 +45,14 @@ class Maze():
         self.lvl_width: int = self.levels[self.lvl_nb]["width"]
         self.lvl_height: int = self.levels[self.lvl_nb]["height"]
 
-        self.offset_x: float = (SPRITE_SIZE / 2) * (self.lvl_width - 1)
-        self.offset_y: float = ((self.height / 2) - 100 - (SPRITE_SIZE / 2)
+        self.scale: float = self._find_scale()
+        self.size: float = SPRITE_SIZE * self.scale
+
+        self.offset_x: float = (self.size / 2) * (self.lvl_width - 1)
+        self.offset_y: float = ((self.height / 2) - 100 - (self.size / 2)
                                 * (self.lvl_height - 1))
 
+        # Initialize the sprite lists
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
@@ -89,9 +93,11 @@ class Maze():
                     self._build_walls(screen_x, screen_y, WALL, 0)
 
                 if y == 0:
-                    self._build_walls(screen_x - 1, screen_y - 1, WALL, -90)
+                    self._build_walls(screen_x - 1, screen_y - 1,
+                                      WALL, -90)
                 else:
-                    self._build_walls(screen_x - 1, screen_y - 1, WALL, 0)
+                    self._build_walls(screen_x - 1, screen_y - 1,
+                                      WALL, 0)
                 self._build_walls(screen_x - 1, screen_y + 1, WALL, 180)
                 self._build_walls(screen_x + 1, screen_y + 1, WALL, 90)
                 self._build_walls(screen_x + 1, screen_y - 1, WALL, 90)
@@ -134,16 +140,16 @@ class Maze():
     def _build_walls(self, x: float, y: float,
                      wall: str, angle: float) -> None:
         try:
-            front_wall = Object(wall, 1, angle)
+            front_wall = Object(wall, self.scale, angle)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not found\033[0m")
 
-        front_wall.center_x = (x * SPRITE_SIZE + (self.width / 2) -
-                               ((SPRITE_SIZE * 2 * (x / 2)) / 2) -
+        front_wall.center_x = (x * self.size + (self.width / 2) -
+                               ((self.size * 2 * (x / 2)) / 2) -
                                self.offset_x)
-        front_wall.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
-                               ((SPRITE_SIZE * 2 * (y / 2)) / 2) -
+        front_wall.center_y = ((self.height - 100) - (y * self.size) +
+                               ((self.size * 2 * (y / 2)) / 2) -
                                self.offset_y)
         front_wall.angle = angle
 
@@ -151,51 +157,51 @@ class Maze():
 
     def _build_ground(self, x: float, y: float) -> None:
         try:
-            ground = Object(GROUND, 1, 0)
+            ground = Object(GROUND, self.scale, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        ground.center_x = (x * SPRITE_SIZE + (self.width / 2) -
-                           ((SPRITE_SIZE * 2 * (x / 2)) / 2) -
+        ground.center_x = (x * self.size + (self.width / 2) -
+                           ((self.size * 2 * (x / 2)) / 2) -
                            self.offset_x)
-        ground.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
-                           ((SPRITE_SIZE * 2 * (y / 2)) / 2) -
+        ground.center_y = ((self.height - 100) - (y * self.size) +
+                           ((self.size * 2 * (y / 2)) / 2) -
                            self.offset_y)
 
         self.ground_list.append(ground)
 
     def _build_pacgum(self, x: float, y: float) -> None:
         try:
-            pacgum = Object(PACGUM, 0.5, 0)
+            pacgum = Object(PACGUM, self.scale * 0.5, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        pacgum.center_x = (x * SPRITE_SIZE + (self.width / 2) -
-                           ((SPRITE_SIZE * 2 * (x / 2)) / 2) -
+        pacgum.center_x = (x * self.size + (self.width / 2) -
+                           ((self.size * 2 * (x / 2)) / 2) -
                            self.offset_x)
-        pacgum.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
-                           ((SPRITE_SIZE * 2 * (y / 2)) / 2) -
+        pacgum.center_y = ((self.height - 100) - (y * self.size) +
+                           ((self.size * 2 * (y / 2)) / 2) -
                            self.offset_y)
 
         self.pacgum_list.append(pacgum)
 
     def _build_super_pacgum(self, x: float, y: float) -> None:
         try:
-            pacgum = Object(SUPER_PAC, 1, 0)
+            pacgum = Object(SUPER_PAC, self.scale, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        pacgum.center_x = (x * SPRITE_SIZE + (self.width / 2) -
-                           ((SPRITE_SIZE * 2 * (x / 2)) / 2) -
+        pacgum.center_x = (x * self.size + (self.width / 2) -
+                           ((self.size * 2 * (x / 2)) / 2) -
                            self.offset_x)
-        pacgum.center_y = ((self.height - 100) - (y * SPRITE_SIZE) +
-                           ((SPRITE_SIZE * 2 * (y / 2)) / 2) -
+        pacgum.center_y = ((self.height - 100) - (y * self.size) +
+                           ((self.size * 2 * (y / 2)) / 2) -
                            self.offset_y)
 
         self.super_pac.append(pacgum)
@@ -221,10 +227,16 @@ class Maze():
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
         self.player = Character(f"{PLAYER_PATH}/walk/walk1.png",
-                                CHARACTER_SIZE / 2, char_walk_anim)
+                                self.scale * (CHARACTER_SIZE / 2),
+                                char_walk_anim)
 
-        self.player.center_x = self.width / 2
-        self.player.center_y = self.height / 2
+        self.player.center_x = (self.lvl_width * self.size + (self.width / 2) -
+                                ((self.size * 2 * (self.lvl_width / 2)) / 2) -
+                                self.offset_x) - self.size
+        self.player.center_y = ((self.height - 100) -
+                                (self.lvl_height * self.size) +
+                                ((self.size * 2 * (self.lvl_height / 2)) / 2)
+                                - self.offset_y) + self.size / 2
 
         self.player_list.append(self.player)
 
@@ -246,3 +258,15 @@ class Maze():
     #     self.enemy.center_y = self.height / 2
 
     #     self.player_list.append(self.enemy)
+
+    def _find_scale(self) -> float:
+        margin = 0.9
+
+        maze_px_width = SPRITE_SIZE * (self.lvl_width + 1)
+        maze_px_height = SPRITE_SIZE * (self.lvl_height + 1)
+
+        available_width = self.width * margin
+        available_height = (self.height - 100) * margin
+
+        return min(available_width / maze_px_width,
+                   available_height / maze_px_height)

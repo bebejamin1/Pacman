@@ -15,6 +15,8 @@ PATH = "assets/background/"
 MAZE_PATH = "assets/maze/"
 MUSIC_PATH = "assets/sound/"
 
+SPRITE_SIZE = 32 * 2
+
 CHARACTER_SIZE = 0.65
 # --------------------- #
 
@@ -36,7 +38,7 @@ class GameView(arcade.View):
         self.lives: int = self.rules.get("live")
         self.flee: bool = False
 
-        self.speed: float = 2
+        self.speed: float = 1.25
 
         self._maze_generation()
         self._collectibles()
@@ -94,9 +96,8 @@ class GameView(arcade.View):
                 p.kill()
 
                 if len(self.maze.pacgum_list) == 0:
-                    if len(self.lvl) >= self.lvl_nb:
+                    if len(self.lvl) - 1 > self.lvl_nb:
                         self.lvl_nb += 1
-
                         lvl_width: int = self.lvl[self.lvl_nb]["width"]
                         lvl_height: int = self.lvl[self.lvl_nb]["height"]
 
@@ -128,6 +129,11 @@ class GameView(arcade.View):
         #         else:
         #             restart level function
 
+        # Updates the HUD
+        self.life_text.text = f"x{self.life}"
+        self.level = self.lvl[self.lvl_nb].get("name")
+        self.level_text.text = self.level
+
         # Updates the countdown
         self.time_elapsed -= delta_time
         minutes = int(self.time_elapsed // 60)
@@ -153,10 +159,10 @@ class GameView(arcade.View):
             self.player.change_y -= self.speed
         elif symbol == arcade.key.LEFT or symbol == arcade.key.A:
             self.player.change_x -= self.speed
-            self.player.scale_x = (CHARACTER_SIZE * -0.5)
+            self.player.scale_x = -CHARACTER_SIZE
         elif symbol == arcade.key.RIGHT or symbol == arcade.key.D:
             self.player.change_x += self.speed
-            self.player.scale_x = (CHARACTER_SIZE * 0.5)
+            self.player.scale_x = CHARACTER_SIZE
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.UP or symbol == arcade.key.W:
@@ -230,6 +236,8 @@ class GameView(arcade.View):
         self.maze = Maze(self.config[1], self.lvl_nb, self.next_maze,
                          self.width, self.height)
         self.maze.generate_maze()
+
+        self.maze._load_player()
 
         self.time_elapsed = self.config[1].get("level_max_time")
 
