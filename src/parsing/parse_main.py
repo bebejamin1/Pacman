@@ -39,7 +39,6 @@ def leaderbord_update(player_name: str, player_score: int) -> dict:
         "player_name": player_name,
         "player_score": player_score
                           })
-    print(leaderbord_path)
 
     bord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
     bord = delete_over_ten(bord)

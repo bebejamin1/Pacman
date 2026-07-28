@@ -3,12 +3,14 @@ import arcade
 from typing import Any
 
 from src.renderer.in_game.characters import Character
+from src.engine.entities import Ghost
 from src.renderer.in_game.sprite import Object
 
 # ----| CONSTANTS |---- #
 PATH = "assets/maze/"
 PATH_PAC = "assets/collectibles/"
 PLAYER_PATH = "assets/player/"
+ENEMY_PATH = "assets/enemies/"
 
 PACGUM = f"{PATH_PAC}pacgum.png"
 SUPER_PAC = f"{PATH_PAC}super_pacgum.png"
@@ -16,6 +18,7 @@ SUPER_PAC = f"{PATH_PAC}super_pacgum.png"
 WALL = f"{PATH}wall.png"
 GROUND = f"{PATH}ground.png"
 
+WALL_EDGE = f"{PATH}wall_w_edge.png"
 SIDE_WALL = f"{PATH}side_wall.png"
 
 TOP_CORNER = f"{PATH}top_corner.png"
@@ -61,10 +64,20 @@ class Maze():
         self.super_pac: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.player_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
-        self.enemies_list: arcade.SpriteList[arcade.Sprite] = \
+        self.enemies: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
+    def _clear_list(self) -> None:
+        self.wall_list.clear()
+        self.ground_list.clear()
+        self.pacgum_list.clear()
+        self.super_pac.clear()
+        self.player_list.clear()
+        self.enemies.clear()
+
     def generate_maze(self) -> None:
+        self._clear_list()
+
         level = self.lvl_info
         maze_width = self.lvl_width
         maze_height = self.lvl_height
@@ -84,23 +97,23 @@ class Maze():
                 if cell & 1:
                     self._build_walls(screen_x, screen_y - 1, WALL, 0)
                 if cell & 2:
-                    self._build_walls(screen_x + 1, screen_y, WALL, 90)
+                    self._build_walls(screen_x + 1, screen_y, WALL, 0)
                 if cell & 4:
-                    self._build_walls(screen_x, screen_y + 1, WALL, 180)
+                    self._build_walls(screen_x, screen_y + 1, WALL, 0)
                 if cell & 8:
-                    self._build_walls(screen_x - 1, screen_y, WALL, -90)
+                    self._build_walls(screen_x - 1, screen_y, WALL, 0)
                 if cell == 15:
                     self._build_walls(screen_x, screen_y, WALL, 0)
 
                 if y == 0:
                     self._build_walls(screen_x - 1, screen_y - 1,
-                                      WALL, -90)
+                                      WALL, 0)
                 else:
                     self._build_walls(screen_x - 1, screen_y - 1,
                                       WALL, 0)
-                self._build_walls(screen_x - 1, screen_y + 1, WALL, 180)
-                self._build_walls(screen_x + 1, screen_y + 1, WALL, 90)
-                self._build_walls(screen_x + 1, screen_y - 1, WALL, 90)
+                self._build_walls(screen_x - 1, screen_y + 1, WALL, 0)
+                self._build_walls(screen_x + 1, screen_y + 1, WALL, 0)
+                self._build_walls(screen_x + 1, screen_y - 1, WALL, 0)
 
                 # Places the pacgums and super pacgums
                 if cell != 15:
@@ -206,27 +219,37 @@ class Maze():
 
         self.super_pac.append(pacgum)
 
+    def _load_entities(self) -> None:
+        # Loads the player at its spawn-point
+        self._load_player()
+
+        # Loads the enemies at their spawn-point
+        self._load_enemy(0, 0)
+        self._load_enemy(0, (self.lvl_height * 2 - 2))
+        self._load_enemy((self.lvl_width * 2 - 2), 0)
+        self._load_enemy((self.lvl_width * 2 - 2), (self.lvl_height * 2 - 2))
+
     def _load_player(self) -> None:
         try:
             char_walk_anim = [
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk1.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk2.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk3.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk4.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk5.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk6.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk7.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk8.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk9.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk10.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk11.png"),
-                arcade.load_texture(f"{PLAYER_PATH}/walk/walk12.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk1.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk2.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk3.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk4.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk5.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk6.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk7.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk8.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk9.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk10.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk11.png"),
+                arcade.load_texture(f"{PLAYER_PATH}walk/walk12.png"),
             ]
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-        self.player = Character(f"{PLAYER_PATH}/walk/walk1.png",
+        self.player = Character(f"{PLAYER_PATH}walk/walk1.png",
                                 self.scale * (CHARACTER_SIZE / 2),
                                 char_walk_anim)
 
@@ -238,26 +261,32 @@ class Maze():
                                 ((self.size * 2 * (self.lvl_height / 2)) / 2)
                                 - self.offset_y) + self.size / 2
 
+        self.player_list.clear()
         self.player_list.append(self.player)
 
-    # def _load_enemy(self) -> None:
-    #     try:
-    #         enemy_walk_anim = [
-    #             arcade.load_texture(f"{PLAYER_PATH}/walk/walk1.png"),
-    #             arcade.load_texture(f"{PLAYER_PATH}/walk/walk2.png"),
-    #             arcade.load_texture(f"{PLAYER_PATH}/walk/walk3.png"),
-    #         ]
+    def _load_enemy(self, x: float, y: float) -> None:
+        try:
+            enemy_walk_anim = [
+                arcade.load_texture(f"{ENEMY_PATH}placeholder1.png"),
+                arcade.load_texture(f"{ENEMY_PATH}placeholder2.png"),
+                arcade.load_texture(f"{ENEMY_PATH}placeholder3.png"),
+                arcade.load_texture(f"{ENEMY_PATH}placeholder4.png"),
+            ]
 
-    #     except FileNotFoundError:
-    #         raise ValueError("\033[1;91mError: Assets folder not found\033[0m")  # noqa
+        except FileNotFoundError:
+            raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-    #     self.enemy = Character(f"{PLAYER_PATH}/walk/walk1.png",
-    #                             CHARACTER_SIZE / 2, enemy_walk_anim)
+        self.enemy = Character(f"{ENEMY_PATH}placeholder1.png", self.scale,
+                               enemy_walk_anim)
 
-    #     self.enemy.center_x = self.width / 2
-    #     self.enemy.center_y = self.height / 2
+        self.enemy.center_x = (x * self.size + (self.width / 2) -
+                               ((self.size * 2 * (x / 2)) / 2) -
+                               self.offset_x)
+        self.enemy.center_y = ((self.height - 100) - (y * self.size) +
+                               ((self.size * 2 * (y / 2)) / 2) -
+                               self.offset_y)
 
-    #     self.player_list.append(self.enemy)
+        self.enemies.append(self.enemy)
 
     def _find_scale(self) -> float:
         margin = 0.9
@@ -270,3 +299,46 @@ class Maze():
 
         return min(available_width / maze_px_width,
                    available_height / maze_px_height)
+
+    def _restart_level(self) -> None:
+        # Player's respawn point
+        self.player.center_x = (self.lvl_width * self.size + (self.width / 2) -
+                                ((self.size * 2 * (self.lvl_width / 2)) / 2) -
+                                self.offset_x) - self.size
+        self.player.center_y = ((self.height - 100) -
+                                (self.lvl_height * self.size) +
+                                ((self.size * 2 * (self.lvl_height / 2)) / 2)
+                                - self.offset_y) + self.size / 2
+
+        # Ghosts' respawn
+        self.enemy.center_x = (0 * self.size + (self.width / 2) -
+                               ((self.size * 2 * (0 / 2)) / 2) -
+                               self.offset_x)
+        self.enemy.center_y = ((self.height - 100) - (0 * self.size) +
+                               ((self.size * 2 * (0 / 2)) / 2) -
+                               self.offset_y)
+
+        self.enemy.center_x = (0 * self.size + (self.width / 2) -
+                               ((self.size * 2 * (0 / 2)) / 2) -
+                               self.offset_x)
+        self.enemy.center_y = ((self.height - 100) - ((self.lvl_height * 2 - 2)
+                                                      * self.size) +
+                               ((self.size * 2 * ((self.lvl_height * 2 - 2)
+                                                  / 2)) / 2) - self.offset_y)
+
+        self.enemy.center_x = ((self.lvl_width * 2 - 2) * self.size
+                               + (self.width / 2) -
+                               ((self.size * 2 * ((self.lvl_width * 2 - 2)
+                                                  / 2)) / 2) - self.offset_x)
+        self.enemy.center_y = ((self.height - 100) - (0 * self.size) +
+                               ((self.size * 2 * (0 / 2)) / 2) -
+                               self.offset_y)
+
+        self.enemy.center_x = ((self.lvl_width * 2 - 2) * self.size
+                               + (self.width / 2) -
+                               ((self.size * 2 * ((self.lvl_width * 2 - 2)
+                                                  / 2)) / 2) - self.offset_x)
+        self.enemy.center_y = ((self.height - 100) - ((self.lvl_height * 2 - 2)
+                                                      * self.size) +
+                               ((self.size * 2 * ((self.lvl_height * 2 - 2)
+                                                  / 2)) / 2) - self.offset_y)

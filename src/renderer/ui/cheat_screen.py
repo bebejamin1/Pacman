@@ -43,10 +43,11 @@ class CheatView(arcade.View):
 
                 if self.cheats.invincible is False:
                     self.cheats.invincible = True
+                    print("Invicibility activated")
 
                 else:
                     self.cheats.invincible = False
-                print("Invicibility activated")
+                    print("Invicibility deactivated")
 
             if sprite == self.skip:
                 arcade.play_sound(self.effect)
@@ -67,10 +68,11 @@ class CheatView(arcade.View):
 
                 if self.cheats.freeze_ghosts is False:
                     self.cheats.freeze_ghosts = True
+                    print("Ghosts freezed")
 
                 else:
                     self.cheats.freeze_ghosts = False
-                print("Stopping the ghosts")
+                    print("Ghosts unfreezed")
 
             if sprite == self.more_lives:
                 arcade.play_sound(self.effect)
@@ -84,11 +86,12 @@ class CheatView(arcade.View):
                 if self.cheats.speed_boost is False:
                     self.cheats.speed_boost = True
                     self.game.speed *= 2
+                    print("Speed added")
 
                 else:
                     self.cheats.speed_boost = False
                     self.game.speed /= 2
-                print("Adds speed")
+                    print("Speed removed")
 
             if sprite == self.resume:
                 arcade.play_sound(self.effect)

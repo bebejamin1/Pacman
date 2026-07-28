@@ -5,6 +5,7 @@ import arcade
 
 from typing import Any
 
+from src.engine.game import Cheats
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Character
 
@@ -38,17 +39,24 @@ class GameView(arcade.View):
         self.lives: int = self.rules.get("live")
         self.flee: bool = False
 
+        self.cheats: Cheats = self.window.cheats
         self.speed: float = 1.25
 
-        self._maze_generation()
+    def setup(self) -> None:
+        if self.lvl_nb == 0:
+            self._maze_generation()
+        else:
+            lvl_width: int = self.lvl[self.lvl_nb]["width"]
+            lvl_height: int = self.lvl[self.lvl_nb]["height"]
+
+            self.next_level(lvl_width, lvl_height)
         self._collectibles()
         self._load_sprite()
         self._load_hud()
 
         self.player: Character = self.maze.player
 
-        self.enemy_list: arcade.SpriteList[arcade.Sprite] = \
-            arcade.SpriteList()
+        self.enemy: Character = self.maze.enemy
 
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
@@ -68,6 +76,7 @@ class GameView(arcade.View):
 
         # Draws entities
         self.maze.player_list.draw()
+        self.maze.enemies.draw()
 
         # Draws the HUD
         self.level_text.draw()
@@ -79,12 +88,14 @@ class GameView(arcade.View):
     def on_update(self, delta_time: float) -> None:
         # Updates entities
         self.maze.player_list.update()
+        self.maze.enemies.update()
 
         # Makes the physics of the game
         self.physic_engine.update()
 
         # Entities animations
         self.player.update_animation(delta_time * 2, None, None)
+        self.enemy.update_animation(delta_time, None, None)
 
         # Checks the collisions with collectibles
         pac_hit = arcade.check_for_collision_with_list(self.player,
@@ -116,18 +127,23 @@ class GameView(arcade.View):
                 self.flee = True
 
         # Checks the collisions with other entities
-        # enemy_hit = arcade.check_for_collision_with_list(self.player,
-        #                                                  self.enemy)
-        # if enemy_hit:
-        #     if self.flee is True:
-        #         self.score += self.rules.get("ghost_points")
-        #         self.score_text.text = self.score
-        #     else:
-        #         self.lives -= 1
-        #         if self.lives == 0:
-        #             self.window.switch_end()
-        #         else:
-        #             restart level function
+        enemy_hit = arcade.check_for_collision_with_list(self.player,
+                                                         self.maze.enemies)
+        if enemy_hit:
+            if self.flee is True:
+                self.score += self.rules.get("ghost_points")
+                self.score_text.text = self.score
+
+            if self.cheats.invincible is True:
+                pass
+
+            else:
+                self.life -= 1
+                if self.life == 0:
+                    self.window.switch_end(False, self.score)
+                else:
+                    self.maze._restart_level()
+                    self.time_elapsed = self.config[1].get("level_max_time")
 
         # Updates the HUD
         self.life_text.text = f"x{self.life}"
@@ -159,10 +175,10 @@ class GameView(arcade.View):
             self.player.change_y -= self.speed
         elif symbol == arcade.key.LEFT or symbol == arcade.key.A:
             self.player.change_x -= self.speed
-            self.player.scale_x = -CHARACTER_SIZE
+            self.player.scale_x = -0.6 * CHARACTER_SIZE
         elif symbol == arcade.key.RIGHT or symbol == arcade.key.D:
             self.player.change_x += self.speed
-            self.player.scale_x = CHARACTER_SIZE
+            self.player.scale_x = 0.6 * CHARACTER_SIZE
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.UP or symbol == arcade.key.W:
@@ -237,7 +253,7 @@ class GameView(arcade.View):
                          self.width, self.height)
         self.maze.generate_maze()
 
-        self.maze._load_player()
+        self.maze._load_entities()
 
         self.time_elapsed = self.config[1].get("level_max_time")
 
@@ -257,7 +273,7 @@ class GameView(arcade.View):
             self.wall = arcade.load_texture(f"{MAZE_PATH}wall.png")
             self.ground = arcade.load_texture(f"{MAZE_PATH}ground.png")
 
-            self.maze._load_player()
+            self.maze._load_entities()
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")

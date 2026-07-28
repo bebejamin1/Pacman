@@ -21,6 +21,10 @@
       "player_score": 1210
     },
     {
+      "player_name": "loser",
+      "player_score": 1040
+    },
+    {
       "player_name": "test",
       "player_score": 670
     },
@@ -35,10 +39,6 @@
     {
       "player_name": "ouaiiiiiis",
       "player_score": 460
-    },
-    {
-      "player_name": "hi",
-      "player_score": 458
     }
   ]
 }
