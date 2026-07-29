@@ -17,8 +17,8 @@ class EndView(arcade.View):
     """
     def __init__(self, win, score) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self.win: bool = win
         self.final_score: int = score

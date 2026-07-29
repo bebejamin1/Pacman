@@ -1,9 +1,13 @@
 import arcade
 
 from typing import Any
+from random import random
+
+from src.engine.algo import Cell
+from src.engine.level import Level
 
 from src.renderer.in_game.characters import Character
-from src.engine.entities import Ghost
+# from src.engine.entities import Ghost
 from src.renderer.in_game.sprite import Object
 
 # ----| CONSTANTS |---- #
@@ -28,25 +32,24 @@ DEAD_END = f"{PATH}dead_end.png"
 
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.6
+PAC_CHANCE = 0.95
 # --------------------- #
 
 
 class Maze():
-    def __init__(self, config: dict[str, Any], lvl_nb: int,
-                 lvl_info: list[list[int]],
-                 width: float, height: float) -> None:
+    def __init__(self, config: dict[str, Any], maze: list[list[int]],
+                 lvl_nb: int, width: float, height: float) -> None:
         self.config: dict[str, Any] = config
-        self.lvl_nb: int = lvl_nb
-        self.lvl_info: list[list[int]] = lvl_info
+        self.maze: list[list[int]] = maze
         self.width: float = width
         self.height: float = height
 
-        self.levels: list[dict[str, Any]] = self.config["level"]
+        self.level: Level = Level(self.maze, lvl_nb)
+        self.game_levels: list[dict[str, Any]] = self.config["level"]
 
         self.seed: int = self.config["seed"]
-
-        self.lvl_width: int = self.levels[self.lvl_nb]["width"]
-        self.lvl_height: int = self.levels[self.lvl_nb]["height"]
+        self.lvl_width: int = self.level.width
+        self.lvl_height: int = self.level.height
 
         self.scale: float = self._find_scale()
         self.size: float = SPRITE_SIZE * self.scale
@@ -78,7 +81,7 @@ class Maze():
     def generate_maze(self) -> None:
         self._clear_list()
 
-        level = self.lvl_info
+        level = self.maze
         maze_width = self.lvl_width
         maze_height = self.lvl_height
 
@@ -105,12 +108,7 @@ class Maze():
                 if cell == 15:
                     self._build_walls(screen_x, screen_y, WALL, 0)
 
-                if y == 0:
-                    self._build_walls(screen_x - 1, screen_y - 1,
-                                      WALL, 0)
-                else:
-                    self._build_walls(screen_x - 1, screen_y - 1,
-                                      WALL, 0)
+                self._build_walls(screen_x - 1, screen_y - 1, WALL, 0)
                 self._build_walls(screen_x - 1, screen_y + 1, WALL, 0)
                 self._build_walls(screen_x + 1, screen_y + 1, WALL, 0)
                 self._build_walls(screen_x + 1, screen_y - 1, WALL, 0)
@@ -118,22 +116,19 @@ class Maze():
                 # Places the pacgums and super pacgums
                 if cell != 15:
                     if screen_x == 0 and screen_y == 0:
-                        self._build_super_pacgum(screen_x, screen_y)
+                        self._build_super_pacgum((screen_x, screen_y))
 
                     elif (screen_x == 0 and
                           screen_y == (self.lvl_height * 2 - 2)):
-                        self._build_super_pacgum(screen_x, screen_y)
+                        self._build_super_pacgum((screen_x, screen_y))
 
                     elif (screen_x == (self.lvl_width * 2 - 2) and
                           screen_y == 0):
-                        self._build_super_pacgum(screen_x, screen_y)
+                        self._build_super_pacgum((screen_x, screen_y))
 
                     elif (screen_x == (self.lvl_width * 2 - 2) and
                           screen_y == (self.lvl_height * 2 - 2)):
-                        self._build_super_pacgum(screen_x, screen_y)
-
-                    else:
-                        self._build_pacgum(screen_x, screen_y)
+                        self._build_super_pacgum((screen_x, screen_y))
 
                 # Places the ground
                 self._build_ground(screen_x, screen_y)
@@ -149,6 +144,10 @@ class Maze():
                     self._build_ground(screen_x + 1, screen_y)
                     self._build_ground(screen_x + 1, screen_y - 1)
                     self._build_ground(screen_x + 1, screen_y + 1)
+
+        for cell in self.level.pacgums:
+            if random() <= PAC_CHANCE:
+                self._build_pacgum(cell)
 
     def _build_walls(self, x: float, y: float,
                      wall: str, angle: float) -> None:
@@ -185,7 +184,7 @@ class Maze():
 
         self.ground_list.append(ground)
 
-    def _build_pacgum(self, x: float, y: float) -> None:
+    def _build_pacgum(self, cell: Cell) -> None:
         try:
             pacgum = Object(PACGUM, self.scale * 0.5, 0)
 
@@ -193,41 +192,38 @@ class Maze():
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        pacgum.center_x = (x * self.size + (self.width / 2) -
-                           ((self.size * 2 * (x / 2)) / 2) -
-                           self.offset_x)
-        pacgum.center_y = ((self.height - 100) - (y * self.size) +
-                           ((self.size * 2 * (y / 2)) / 2) -
-                           self.offset_y)
+        x, y = cell
+        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        pacgum.center_x = new_x
+        pacgum.center_y = new_y
 
         self.pacgum_list.append(pacgum)
 
-    def _build_super_pacgum(self, x: float, y: float) -> None:
+    def _build_super_pacgum(self, cell: Cell) -> None:
         try:
-            pacgum = Object(SUPER_PAC, self.scale, 0)
+            sup_pacgum = Object(SUPER_PAC, self.scale, 0)
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        pacgum.center_x = (x * self.size + (self.width / 2) -
-                           ((self.size * 2 * (x / 2)) / 2) -
-                           self.offset_x)
-        pacgum.center_y = ((self.height - 100) - (y * self.size) +
-                           ((self.size * 2 * (y / 2)) / 2) -
-                           self.offset_y)
+        new_x, new_y = self._convert_coords(cell)
+        sup_pacgum.center_x = new_x
+        sup_pacgum.center_y = new_y
 
-        self.super_pac.append(pacgum)
+        self.super_pac.append(sup_pacgum)
 
     def _load_entities(self) -> None:
+        # Clears the entities lists
+        self.player_list.clear()
+        self.enemies.clear()
+
         # Loads the player at its spawn-point
         self._load_player()
 
         # Loads the enemies at their spawn-point
-        self._load_enemy(0, 0)
-        self._load_enemy(0, (self.lvl_height * 2 - 2))
-        self._load_enemy((self.lvl_width * 2 - 2), 0)
-        self._load_enemy((self.lvl_width * 2 - 2), (self.lvl_height * 2 - 2))
+        for cell in self.level.corners:
+            self._load_enemy(cell)
 
     def _load_player(self) -> None:
         try:
@@ -253,18 +249,14 @@ class Maze():
                                 self.scale * (CHARACTER_SIZE / 2),
                                 char_walk_anim)
 
-        self.player.center_x = (self.lvl_width * self.size + (self.width / 2) -
-                                ((self.size * 2 * (self.lvl_width / 2)) / 2) -
-                                self.offset_x) - self.size
-        self.player.center_y = ((self.height - 100) -
-                                (self.lvl_height * self.size) +
-                                ((self.size * 2 * (self.lvl_height / 2)) / 2)
-                                - self.offset_y) + self.size / 2
+        x, y = self.level.player_spawn
+        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        self.player.center_x = new_x
+        self.player.center_y = new_y
 
-        self.player_list.clear()
         self.player_list.append(self.player)
 
-    def _load_enemy(self, x: float, y: float) -> None:
+    def _load_enemy(self, cell: Cell) -> None:
         try:
             enemy_walk_anim = [
                 arcade.load_texture(f"{ENEMY_PATH}placeholder1.png"),
@@ -279,12 +271,10 @@ class Maze():
         self.enemy = Character(f"{ENEMY_PATH}placeholder1.png", self.scale,
                                enemy_walk_anim)
 
-        self.enemy.center_x = (x * self.size + (self.width / 2) -
-                               ((self.size * 2 * (x / 2)) / 2) -
-                               self.offset_x)
-        self.enemy.center_y = ((self.height - 100) - (y * self.size) +
-                               ((self.size * 2 * (y / 2)) / 2) -
-                               self.offset_y)
+        x, y = cell
+        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        self.enemy.center_x = new_x
+        self.enemy.center_y = new_y
 
         self.enemies.append(self.enemy)
 
@@ -302,43 +292,24 @@ class Maze():
 
     def _restart_level(self) -> None:
         # Player's respawn point
-        self.player.center_x = (self.lvl_width * self.size + (self.width / 2) -
-                                ((self.size * 2 * (self.lvl_width / 2)) / 2) -
-                                self.offset_x) - self.size
-        self.player.center_y = ((self.height - 100) -
-                                (self.lvl_height * self.size) +
-                                ((self.size * 2 * (self.lvl_height / 2)) / 2)
-                                - self.offset_y) + self.size / 2
+        x, y = self.level.player_spawn
+        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        self.player.center_x = new_x
+        self.player.center_y = new_y
 
         # Ghosts' respawn
-        self.enemy.center_x = (0 * self.size + (self.width / 2) -
-                               ((self.size * 2 * (0 / 2)) / 2) -
-                               self.offset_x)
-        self.enemy.center_y = ((self.height - 100) - (0 * self.size) +
-                               ((self.size * 2 * (0 / 2)) / 2) -
-                               self.offset_y)
+        for cell in self.level.corners:
+            x, y = cell
+            nx, ny = self._convert_coords((x * 2, y * 2))
+            self.enemy.center_x = nx
+            self.enemy.center_y = ny
 
-        self.enemy.center_x = (0 * self.size + (self.width / 2) -
-                               ((self.size * 2 * (0 / 2)) / 2) -
-                               self.offset_x)
-        self.enemy.center_y = ((self.height - 100) - ((self.lvl_height * 2 - 2)
-                                                      * self.size) +
-                               ((self.size * 2 * ((self.lvl_height * 2 - 2)
-                                                  / 2)) / 2) - self.offset_y)
+    def _convert_coords(self, cell: Cell) -> tuple[float, float]:
+        x, y = cell
 
-        self.enemy.center_x = ((self.lvl_width * 2 - 2) * self.size
-                               + (self.width / 2) -
-                               ((self.size * 2 * ((self.lvl_width * 2 - 2)
-                                                  / 2)) / 2) - self.offset_x)
-        self.enemy.center_y = ((self.height - 100) - (0 * self.size) +
-                               ((self.size * 2 * (0 / 2)) / 2) -
-                               self.offset_y)
+        new_x = (x * self.size + (self.width / 2) -
+                 ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
+        new_y = ((self.height - 100) - (y * self.size) +
+                 ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
 
-        self.enemy.center_x = ((self.lvl_width * 2 - 2) * self.size
-                               + (self.width / 2) -
-                               ((self.size * 2 * ((self.lvl_width * 2 - 2)
-                                                  / 2)) / 2) - self.offset_x)
-        self.enemy.center_y = ((self.height - 100) - ((self.lvl_height * 2 - 2)
-                                                      * self.size) +
-                               ((self.size * 2 * ((self.lvl_height * 2 - 2)
-                                                  / 2)) / 2) - self.offset_y)
+        return (new_x, new_y)

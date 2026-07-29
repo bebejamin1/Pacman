@@ -16,8 +16,8 @@ class MenuView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self._load()
         self.window.play_music(self.menu_music, True)

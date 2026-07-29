@@ -130,9 +130,9 @@ class GameView(arcade.View):
         enemy_hit = arcade.check_for_collision_with_list(self.player,
                                                          self.maze.enemies)
         if enemy_hit:
-            if self.flee is True:
-                self.score += self.rules.get("ghost_points")
-                self.score_text.text = self.score
+            # if self.flee is True:
+            #     self.score += self.rules.get("ghost_points")
+            #     self.score_text.text = self.score
 
             if self.cheats.invincible is True:
                 pass
@@ -239,9 +239,8 @@ class GameView(arcade.View):
     def _maze_generation(self) -> None:
         self.game = self.window.new_game(self.config[1], self.lvl)
 
-        self.maze: Maze = Maze(self.config[1], self.lvl_nb,
-                               self.window.first_maze,
-                               self.width, self.height)
+        self.maze: Maze = Maze(self.config[1], self.window.first_maze,
+                               self.lvl_nb, self.width, self.height)
         self.maze.generate_maze()
 
     def next_level(self, width: int, height: int) -> None:
@@ -249,8 +248,8 @@ class GameView(arcade.View):
                                                                 height),
                                                                self.seed)
 
-        self.maze = Maze(self.config[1], self.lvl_nb, self.next_maze,
-                         self.width, self.height)
+        self.maze = Maze(self.config[1], self.next_maze,
+                         self.lvl_nb, self.width, self.height)
         self.maze.generate_maze()
 
         self.maze._load_entities()

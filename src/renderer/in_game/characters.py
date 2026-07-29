@@ -17,9 +17,9 @@ class Character(arcade.Sprite):
                  character_animation: list[arcade.Texture]) -> None:
         super().__init__(path, scale)
 
-        self.curr_texture = 0
-        self.animation = character_animation
-        self.timer = 0.0
+        self.curr_texture: arcade.Texture = 0
+        self.animation: list[arcade.Texture] = character_animation
+        self.timer: float = 0.0
 
     def update_animation(self, delta_time: float = 1 / 60,
                          *args: Any, **kwargs: Any) -> None:

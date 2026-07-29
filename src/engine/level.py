@@ -49,8 +49,7 @@ class Level:
         center = (self.width // 2, self.height // 2)
         self.player_spawn = self._closest(center, open_cells)
         self.super_pacgums = set(self.corners)
-        self.pacgums = (open_cells - self.super_pacgums
-                        - {self.player_spawn})
+        self.pacgums = (open_cells - self.super_pacgums - {self.player_spawn})
 
 # ================================= CAN MOVE ==================================
 
