@@ -56,7 +56,10 @@ class GameView(arcade.View):
 
         self.player: Character = self.maze.player
 
-        self.enemy: Character = self.maze.enemy
+        self.red: Character = self.maze.red
+        self.orange: Character = self.maze.orange
+        self.cyan: Character = self.maze.cyan
+        self.pink: Character = self.maze.pink
 
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
@@ -95,7 +98,11 @@ class GameView(arcade.View):
 
         # Entities animations
         self.player.update_animation(delta_time * 2, None, None)
-        self.enemy.update_animation(delta_time, None, None)
+
+        self.red.update_animation(delta_time, None, None)
+        self.orange.update_animation(delta_time, None, None)
+        self.cyan.update_animation(delta_time, None, None)
+        self.pink.update_animation(delta_time, None, None)
 
         # Checks the collisions with collectibles
         pac_hit = arcade.check_for_collision_with_list(self.player,
@@ -130,9 +137,9 @@ class GameView(arcade.View):
         enemy_hit = arcade.check_for_collision_with_list(self.player,
                                                          self.maze.enemies)
         if enemy_hit:
-            # if self.flee is True:
-            #     self.score += self.rules.get("ghost_points")
-            #     self.score_text.text = self.score
+            if self.flee is True:
+                self.score += self.rules.get("ghost_points")
+                self.score_text.text = self.score
 
             if self.cheats.invincible is True:
                 pass

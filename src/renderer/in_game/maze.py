@@ -222,8 +222,7 @@ class Maze():
         self._load_player()
 
         # Loads the enemies at their spawn-point
-        for cell in self.level.corners:
-            self._load_enemy(cell)
+        self._load_enemies()
 
     def _load_player(self) -> None:
         try:
@@ -256,27 +255,55 @@ class Maze():
 
         self.player_list.append(self.player)
 
-    def _load_enemy(self, cell: Cell) -> None:
+    def _load_enemies(self) -> None:
         try:
-            enemy_walk_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}placeholder1.png"),
-                arcade.load_texture(f"{ENEMY_PATH}placeholder2.png"),
-                arcade.load_texture(f"{ENEMY_PATH}placeholder3.png"),
-                arcade.load_texture(f"{ENEMY_PATH}placeholder4.png"),
+            red_anim = [
+                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png"),
+            ]
+            orange_anim = [
+                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png"),
+            ]
+            cyan_anim = [
+                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png"),
+            ]
+            pink_anim = [
+                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png"),
             ]
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-        self.enemy = Character(f"{ENEMY_PATH}placeholder1.png", self.scale,
-                               enemy_walk_anim)
+        self.red = Character(f"{ENEMY_PATH}alive/red_ghost.png",
+                        self.scale / 1.5, red_anim)
+        self.orange = Character(f"{ENEMY_PATH}alive/orange_ghost.png",
+                           self.scale / 1.5, orange_anim)
+        self.cyan = Character(f"{ENEMY_PATH}alive/cyan_ghost.png",
+                         self.scale / 1.5, cyan_anim)
+        self.pink = Character(f"{ENEMY_PATH}alive/pink_ghost.png",
+                         self.scale / 1.5, pink_anim)
 
-        x, y = cell
-        new_x, new_y = self._convert_coords((x * 2, y * 2))
-        self.enemy.center_x = new_x
-        self.enemy.center_y = new_y
+        i: int = 0
+        for cell in self.level.corners:
+            x, y = cell
+            new_x, new_y = self._convert_coords((x * 2, y * 2))
+            if i == 0:
+                self.red.center_x = new_x
+                self.red.center_y = new_y
+            if i == 1:
+                self.orange.center_x = new_x
+                self.orange.center_y = new_y
+            if i == 2:
+                self.cyan.center_x = new_x
+                self.cyan.center_y = new_y
+            if i == 3:
+                self.pink.center_x = new_x
+                self.pink.center_y = new_y
+            i += 1
 
-        self.enemies.append(self.enemy)
+        self.enemies.append(self.red)
+        self.enemies.append(self.orange)
+        self.enemies.append(self.cyan)
+        self.enemies.append(self.pink)
 
     def _find_scale(self) -> float:
         margin = 0.9
@@ -293,16 +320,28 @@ class Maze():
     def _restart_level(self) -> None:
         # Player's respawn point
         x, y = self.level.player_spawn
-        new_x, new_y = self._convert_coords((x * 2, y * 2))
-        self.player.center_x = new_x
-        self.player.center_y = new_y
+        nx, ny = self._convert_coords((x * 2, y * 2))
+        self.player.center_x = nx
+        self.player.center_y = ny
 
         # Ghosts' respawn
+        i: int = 0
         for cell in self.level.corners:
             x, y = cell
             nx, ny = self._convert_coords((x * 2, y * 2))
-            self.enemy.center_x = nx
-            self.enemy.center_y = ny
+            if i == 0:
+                self.red.center_x = nx
+                self.red.center_y = ny
+            if i == 1:
+                self.orange.center_x = nx
+                self.orange.center_y = ny
+            if i == 2:
+                self.cyan.center_x = nx
+                self.cyan.center_y = ny
+            if i == 3:
+                self.pink.center_x = nx
+                self.pink.center_y = ny
+            i += 1
 
     def _convert_coords(self, cell: Cell) -> tuple[float, float]:
         x, y = cell

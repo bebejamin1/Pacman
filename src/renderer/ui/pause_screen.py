@@ -34,7 +34,7 @@ class PauseView(arcade.View):
         for sprite in hit:
             if sprite == self.resume:
                 arcade.play_sound(self.effect)
-                self.window.switch_game()
+                self.window.switch_game(False)
                 print("Resume Game")
 
             if sprite == self.menu:

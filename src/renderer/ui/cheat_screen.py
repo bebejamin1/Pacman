@@ -57,7 +57,7 @@ class CheatView(arcade.View):
                     lvl_height: int = self.game.lvl[self.game.lvl_nb]["height"]
 
                     self.game.next_level(lvl_width, lvl_height)
-                    self.window.switch_game()
+                    self.window.switch_game(True)
 
                 else:
                     self.window.switch_end(True, self.game.score)
@@ -96,7 +96,7 @@ class CheatView(arcade.View):
             if sprite == self.resume:
                 arcade.play_sound(self.effect)
 
-                self.window.switch_game()
+                self.window.switch_game(False)
                 print("Resume Game")
 
     def on_draw(self) -> None:
