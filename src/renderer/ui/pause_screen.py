@@ -15,6 +15,7 @@ class PauseView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
+        self.window = arcade.get_window()
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 

@@ -67,7 +67,7 @@ class GameEngine(arcade.Window):
     def switch_game(self, restart: bool) -> None:
         # Goes on the game
         self.play_music(self.menu_music, True, False)
-        if restart == True:
+        if restart is True:
             self.game_view.setup()
         self.show_view(self.game_view)
         self.play_music(self.game_music, True)

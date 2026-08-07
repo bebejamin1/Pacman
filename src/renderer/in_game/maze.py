@@ -3,11 +3,10 @@ import arcade
 from typing import Any
 from random import random
 
-from src.engine.algo import Cell
+from src.engine.algo import Cell, Personality
 from src.engine.level import Level
 
-from src.renderer.in_game.characters import Character
-# from src.engine.entities import Ghost
+from src.renderer.in_game.characters import Player, Enemies
 from src.renderer.in_game.sprite import Object
 
 # ----| CONSTANTS |---- #
@@ -62,21 +61,32 @@ class Maze():
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
+
         self.pacgum_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
         self.super_pac: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+
         self.player_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
-        self.enemies: arcade.SpriteList[arcade.Sprite] = \
-            arcade.SpriteList()
+
+        self.red_lst: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.orange_lst: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.cyan_lst: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
+        self.pink_lst: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
 
     def _clear_list(self) -> None:
         self.wall_list.clear()
         self.ground_list.clear()
+
         self.pacgum_list.clear()
         self.super_pac.clear()
+
         self.player_list.clear()
-        self.enemies.clear()
+
+        self.red_lst.clear()
+        self.orange_lst.clear()
+        self.cyan_lst.clear()
+        self.pink_lst.clear()
 
     def generate_maze(self) -> None:
         self._clear_list()
@@ -157,12 +167,9 @@ class Maze():
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: wall asset not found\033[0m")
 
-        front_wall.center_x = (x * self.size + (self.width / 2) -
-                               ((self.size * 2 * (x / 2)) / 2) -
-                               self.offset_x)
-        front_wall.center_y = ((self.height - 100) - (y * self.size) +
-                               ((self.size * 2 * (y / 2)) / 2) -
-                               self.offset_y)
+        new_x, new_y = self.convert_screen_coords((x, y))
+        front_wall.center_x = new_x
+        front_wall.center_y = new_y
         front_wall.angle = angle
 
         self.wall_list.append(front_wall)
@@ -175,12 +182,9 @@ class Maze():
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        ground.center_x = (x * self.size + (self.width / 2) -
-                           ((self.size * 2 * (x / 2)) / 2) -
-                           self.offset_x)
-        ground.center_y = ((self.height - 100) - (y * self.size) +
-                           ((self.size * 2 * (y / 2)) / 2) -
-                           self.offset_y)
+        new_x, new_y = self.convert_screen_coords((x, y))
+        ground.center_x = new_x
+        ground.center_y = new_y
 
         self.ground_list.append(ground)
 
@@ -193,7 +197,7 @@ class Maze():
                              " found\033[0m")
 
         x, y = cell
-        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
         pacgum.center_x = new_x
         pacgum.center_y = new_y
 
@@ -207,7 +211,7 @@ class Maze():
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        new_x, new_y = self._convert_coords(cell)
+        new_x, new_y = self.convert_screen_coords(cell)
         sup_pacgum.center_x = new_x
         sup_pacgum.center_y = new_y
 
@@ -216,7 +220,11 @@ class Maze():
     def _load_entities(self) -> None:
         # Clears the entities lists
         self.player_list.clear()
-        self.enemies.clear()
+        # self.enemies.clear()
+        self.red_lst.clear()
+        self.orange_lst.clear()
+        self.cyan_lst.clear()
+        self.pink_lst.clear()
 
         # Loads the player at its spawn-point
         self._load_player()
@@ -244,12 +252,12 @@ class Maze():
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-        self.player = Character(f"{PLAYER_PATH}walk/walk1.png",
-                                self.scale * (CHARACTER_SIZE / 2),
-                                char_walk_anim)
+        self.player = Player(f"{PLAYER_PATH}walk/walk1.png",
+                             self.scale * (CHARACTER_SIZE / 2),
+                             char_walk_anim)
 
         x, y = self.level.player_spawn
-        new_x, new_y = self._convert_coords((x * 2, y * 2))
+        new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = new_x
         self.player.center_y = new_y
 
@@ -273,37 +281,46 @@ class Maze():
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-        self.red = Character(f"{ENEMY_PATH}alive/red_ghost.png",
-                        self.scale / 1.5, red_anim)
-        self.orange = Character(f"{ENEMY_PATH}alive/orange_ghost.png",
-                           self.scale / 1.5, orange_anim)
-        self.cyan = Character(f"{ENEMY_PATH}alive/cyan_ghost.png",
-                         self.scale / 1.5, cyan_anim)
-        self.pink = Character(f"{ENEMY_PATH}alive/pink_ghost.png",
-                         self.scale / 1.5, pink_anim)
-
         i: int = 0
         for cell in self.level.corners:
             x, y = cell
-            new_x, new_y = self._convert_coords((x * 2, y * 2))
+            new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
+            spawn: Cell = (int(new_x), int(new_y))
+
             if i == 0:
+                self.red = Enemies(f"{ENEMY_PATH}alive/red_ghost.png",
+                                   self.scale / 1.5, red_anim,
+                                   self.maze, Personality.CHASER, spawn)
                 self.red.center_x = new_x
                 self.red.center_y = new_y
+
             if i == 1:
+                self.orange = Enemies(f"{ENEMY_PATH}alive/orange_ghost.png",
+                                      self.scale / 1.5, orange_anim,
+                                      self.maze, Personality.SHY, spawn)
                 self.orange.center_x = new_x
                 self.orange.center_y = new_y
+
             if i == 2:
+                self.cyan = Enemies(f"{ENEMY_PATH}alive/cyan_ghost.png",
+                                    self.scale / 1.5, cyan_anim,
+                                    self.maze, Personality.RANDOM, spawn)
                 self.cyan.center_x = new_x
                 self.cyan.center_y = new_y
+
             if i == 3:
+                self.pink = Enemies(f"{ENEMY_PATH}alive/pink_ghost.png",
+                                    self.scale / 1.5, pink_anim,
+                                    self.maze, Personality.AMBUSHER, spawn)
                 self.pink.center_x = new_x
                 self.pink.center_y = new_y
+
             i += 1
 
-        self.enemies.append(self.red)
-        self.enemies.append(self.orange)
-        self.enemies.append(self.cyan)
-        self.enemies.append(self.pink)
+        self.red_lst.append(self.red)
+        self.orange_lst.append(self.orange)
+        self.cyan_lst.append(self.cyan)
+        self.pink_lst.append(self.pink)
 
     def _find_scale(self) -> float:
         margin = 0.9
@@ -320,7 +337,7 @@ class Maze():
     def _restart_level(self) -> None:
         # Player's respawn point
         x, y = self.level.player_spawn
-        nx, ny = self._convert_coords((x * 2, y * 2))
+        nx, ny = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = nx
         self.player.center_y = ny
 
@@ -328,27 +345,48 @@ class Maze():
         i: int = 0
         for cell in self.level.corners:
             x, y = cell
-            nx, ny = self._convert_coords((x * 2, y * 2))
+            nx, ny = self.convert_screen_coords((x * 2, y * 2))
+
             if i == 0:
                 self.red.center_x = nx
                 self.red.center_y = ny
+                self.red.cell = cell
+                self.red.brain.reset()
+
             if i == 1:
                 self.orange.center_x = nx
                 self.orange.center_y = ny
+                self.orange.cell = cell
+                self.orange.brain.reset()
+
             if i == 2:
                 self.cyan.center_x = nx
                 self.cyan.center_y = ny
+                self.cyan.cell = cell
+                self.cyan.brain.reset()
+
             if i == 3:
                 self.pink.center_x = nx
                 self.pink.center_y = ny
+                self.pink.cell = cell
+                self.pink.brain.reset()
+
             i += 1
 
-    def _convert_coords(self, cell: Cell) -> tuple[float, float]:
+    def convert_screen_coords(self, cell: Cell) -> Cell:
         x, y = cell
 
-        new_x = (x * self.size + (self.width / 2) -
-                 ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
-        new_y = ((self.height - 100) - (y * self.size) +
-                 ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
+        nx = round(x * self.size + (self.width / 2) -
+                      ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
+        ny = round((self.height - 100) - (y * self.size) +
+                      ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
 
-        return (new_x, new_y)
+        return (nx, ny)
+
+    def convert_cell_coords(self, screen_x: int, screen_y: int) -> Cell:
+        nx = round(screen_x - (self.width / 2 - self.offset_x) / self.size)
+        ny = round(((self.height - 100 - self.offset_y)
+                       - screen_y) / self.size)
+
+        return (nx, ny)
+
