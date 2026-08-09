@@ -17,6 +17,10 @@
       "player_score": 1360
     },
     {
+      "player_name": "benlpb",
+      "player_score": 1340
+    },
+    {
       "player_name": "winner",
       "player_score": 1210
     },
@@ -35,10 +39,6 @@
     {
       "player_name": "test",
       "player_score": 670
-    },
-    {
-      "player_name": "testbis",
-      "player_score": 666
     }
   ]
 }

@@ -20,8 +20,9 @@ MUSIC_PATH = "assets/sound/"
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.65
 
-GHOST_SPEED = 0.2
+GHOST_SPEED = 0.7  # avant il etait a 0.2 c chaud
 FRIGHT_TIME = 10.0
+GHOST_RESPAWN_TIME = 7.0  # cooldown pr le respwan dun fantome
 # --------------------- #
 
 
@@ -71,14 +72,21 @@ class GameView(arcade.View):
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
 
-        self.red_physic_engine = arcade.PhysicsEngineSimple(self.red,
-                                                            self.maze.wall_list)
-        self.orange_physic_engine = arcade.PhysicsEngineSimple(self.orange,
-                                                            self.maze.wall_list)
-        self.cyan_physic_engine = arcade.PhysicsEngineSimple(self.cyan,
-                                                            self.maze.wall_list)
-        self.pink_physic_engine = arcade.PhysicsEngineSimple(self.pink,
-                                                            self.maze.wall_list)
+        self.red_physic_engine = arcade.PhysicsEngineSimple(
+            self.red, self.maze.wall_list
+                                                           )
+
+        self.orange_physic_engine = arcade.PhysicsEngineSimple(
+            self.orange, self.maze.wall_list
+                                                              )
+
+        self.cyan_physic_engine = arcade.PhysicsEngineSimple(
+            self.cyan, self.maze.wall_list
+                                                            )
+
+        self.pink_physic_engine = arcade.PhysicsEngineSimple(
+            self.pink, self.maze.wall_list
+                                                            )
 
     def on_draw(self) -> None:
         self.clear()
@@ -141,6 +149,9 @@ class GameView(arcade.View):
                 self.flee = False
                 self._flee_timer = 0.0
 
+        # ajout : decompte du cooldown des fantomes manges
+        self._tick_ghost_respawn(delta_time)  # ajout
+
         # Checks the collisions with collectibles
         pac_hit = arcade.check_for_collision_with_list(self.player,
                                                        self.maze.pacgum_list)
@@ -169,6 +180,7 @@ class GameView(arcade.View):
                 self.score_text.text = self.score
                 p.kill()
                 self.flee = True
+                self._flee_timer = FRIGHT_TIME  # ajout
 
         # Checks the collisions with other entities
         red_hit = arcade.check_for_collision_with_list(self.player,
@@ -185,7 +197,18 @@ class GameView(arcade.View):
                 self.score += self.rules.get("ghost_points")
                 self.score_text.text = self.score
 
-            if self.cheats.invincible is True:
+                # le fantome manger retourn chez lui apres le cooldown
+                if red_hit:  # apres
+                    self._eat_ghost(self.red)  # apres
+                if orange_hit:  # apres
+                    self._eat_ghost(self.orange)  # apres
+                if cyan_hit:  # apres
+                    self._eat_ghost(self.cyan)  # apres
+                if pink_hit:  # apres
+                    self._eat_ghost(self.pink)  # apres
+
+            # if self.cheats.invincible is True:  # avant
+            elif self.cheats.invincible is True:  # apres
                 pass
 
             else:
@@ -211,8 +234,8 @@ class GameView(arcade.View):
             self.window.switch_end(False, self.score)
 
     def _move_ghosts(self, delta_time: float) -> None:
-        # if self.cheats.freeze_ghosts:
-        #     return
+        if self.cheats.freeze_ghosts:
+            return
 
         self._ghost_clock += delta_time
 
@@ -233,25 +256,70 @@ class GameView(arcade.View):
         while self._ghost_clock >= step:
             self._ghost_clock -= step
 
+            # jai repris comme tu faisait dans maze pour convertir cel en px
             new_cell = self.red.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            # new_x, new_y = new_cell  # avant
+            new_x, new_y = self.maze.convert_screen_coords(  # APRES
+                (new_cell[0] * 2, new_cell[1] * 2))  # APRES
             self.red.center_x = new_x
             self.red.center_y = new_y
+            if self.red.eaten:  # ajout : cache le fantome mange hors ecran
+                self.red.center_x = -1000  # ajout
+                self.red.center_y = -1000  # ajout
 
             new_cell = self.orange.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            # new_x, new_y = new_cell  # avant
+            new_x, new_y = self.maze.convert_screen_coords(  # apres
+                (new_cell[0] * 2, new_cell[1] * 2))  # apres
             self.orange.center_x = new_x
             self.orange.center_y = new_y
+            if self.orange.eaten:  # ajout
+                self.orange.center_x = -1000  # ajout
+                self.orange.center_y = -1000  # ajout
 
             new_cell = self.cyan.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            # new_x, new_y = new_cell  # avant
+            new_x, new_y = self.maze.convert_screen_coords(  # apres
+                (new_cell[0] * 2, new_cell[1] * 2))  # apres
             self.cyan.center_x = new_x
             self.cyan.center_y = new_y
+            if self.cyan.eaten:  # ajout
+                self.cyan.center_x = -1000  # ajout
+                self.cyan.center_y = -1000  # ajout
 
             new_cell = self.pink.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            # new_x, new_y = new_cell  # avant
+            new_x, new_y = self.maze.convert_screen_coords(  # apres
+                (new_cell[0] * 2, new_cell[1] * 2))  # apres
+
             self.pink.center_x = new_x
             self.pink.center_y = new_y
+            if self.pink.eaten:  # ajout
+                self.pink.center_x = -1000  # ajout
+                self.pink.center_y = -1000  # ajout
+
+    def _eat_ghost(self, ghost: Enemies) -> None:  # ajout
+        # lance le cooldown
+        ghost.eaten = True  # ajout
+        ghost.respawn_timer = GHOST_RESPAWN_TIME  # ajout
+
+    def _tick_ghost_respawn(self, delta_time: float) -> None:  # ajout
+        for ghost in (self.red, self.orange, self.cyan, self.pink):  # ajout
+            if not ghost.eaten:  # ajout
+                continue  # ajout
+            ghost.respawn_timer -= delta_time  # ajout
+            if ghost.respawn_timer <= 0:  # ajout
+                self._respawn_ghost(ghost)  # ajout
+
+    # quand on le mange il respawn a son spawn ca fait bcp de spawn
+    def _respawn_ghost(self, ghost: Enemies) -> None:  # ajout
+        ghost.eaten = False  # ajout
+        x, y = ghost.spawn
+        nx, ny = self.maze.convert_screen_coords((x * 2, y * 2))
+        ghost.center_x = nx
+        ghost.center_y = ny
+        ghost.cell = ghost.spawn
+        ghost.brain.reset()
 
     def _player_direction(self) -> Cell:
         if self.player.change_x > 0:
