@@ -4,6 +4,8 @@ import json
 import os
 import re
 
+from typing import Any
+
 rs = "\033[0m"
 r = "\033[31m\033[5m\033[1m"
 
@@ -21,7 +23,7 @@ def strip_json_comments(text: str) -> str:
 # *                             PARSE CONF                                    *
 # *                                                                           *
 
-def parse_conf(path: str) -> list:
+def parse_conf(path: str) -> list[Any]:
 
     # os.system("clear")
 
@@ -114,7 +116,7 @@ def parse_conf(path: str) -> list:
 # *                          PARSE LEADERBORD                                 *
 # *                                                                           *
 
-def parse_leaderbord(path: str) -> dict:
+def parse_leaderbord(path: str) -> dict[str, Any]:
     try:
         if not (path.endswith(".json")):
             raise ValueError("The leaderboard must be a .json file.")
@@ -125,7 +127,8 @@ def parse_leaderbord(path: str) -> dict:
 
         else:
             with open(path, "r") as f:
-                leaderbord: dict = json.loads(strip_json_comments(f.read()))
+                leaderbord: dict[str, Any] = \
+                  json.loads(strip_json_comments(f.read()))
 
     except (FileNotFoundError, json.JSONDecodeError,
             ValueError, PermissionError):
@@ -178,7 +181,7 @@ def parse_leaderbord(path: str) -> dict:
 
 # *                              ASSETS                                       *
 
-default_leaderbord: dict[str, list] = {"scores": []}
+default_leaderbord: dict[str, list[Any]] = {"scores": []}
 
 default_conf = {
     "highscore_filename": "data/leaderboard.json",

@@ -15,10 +15,11 @@ class EndView(arcade.View):
     """
     This class manages the finish screen (Game Over and Victory).
     """
-    def __init__(self, win, score) -> None:
+    def __init__(self, win: bool, score: int) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.window = arcade.get_window()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self.win: bool = win
         self.final_score: int = score

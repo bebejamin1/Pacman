@@ -64,9 +64,11 @@ class GameEngine(arcade.Window):
         # Goes on the highscore menu
         self.show_view(self.highscore_view)
 
-    def switch_game(self) -> None:
+    def switch_game(self, restart: bool) -> None:
         # Goes on the game
         self.play_music(self.menu_music, True, False)
+        if restart is True:
+            self.game_view.setup()
         self.show_view(self.game_view)
         self.play_music(self.game_music, True)
 

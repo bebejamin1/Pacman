@@ -16,8 +16,9 @@ class MenuView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.window = arcade.get_window()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self._load()
         self.window.play_music(self.menu_music, True)
@@ -25,16 +26,12 @@ class MenuView(arcade.View):
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ENTER:
             arcade.play_sound(self.effect)
-            self.window.switch_game()
+            self.window.switch_game(True)
             print("Start Game!")
 
         if symbol == arcade.key.ESCAPE:
             print("Bye bye!")
             arcade.close_window()
-
-        # ---- debug end screen ---- #
-        if symbol == arcade.key.V:
-            self.window.switch_end()
 
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
@@ -43,7 +40,7 @@ class MenuView(arcade.View):
         for sprite in hit:
             if sprite == self.start:
                 arcade.play_sound(self.effect)
-                self.window.switch_game()
+                self.window.switch_game(True)
                 print("Start Game!")
 
             if sprite == self.inst:

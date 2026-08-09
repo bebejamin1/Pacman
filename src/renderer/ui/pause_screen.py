@@ -15,8 +15,9 @@ class PauseView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.button_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList(
-        )
+        self.window = arcade.get_window()
+        self.button_list: arcade.SpriteList[arcade.Sprite] = \
+            arcade.SpriteList()
 
         self._load()
 
@@ -34,7 +35,7 @@ class PauseView(arcade.View):
         for sprite in hit:
             if sprite == self.resume:
                 arcade.play_sound(self.effect)
-                self.window.switch_game()
+                self.window.switch_game(False)
                 print("Resume Game")
 
             if sprite == self.menu:

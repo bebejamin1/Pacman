@@ -172,8 +172,6 @@ name = "pacman"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-<<<<<<< HEAD
-=======
     { name = "arcade" },
     { name = "flake8" },
     { name = "mazegenerator" },
@@ -182,8 +180,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-<<<<<<< HEAD
-=======
     { name = "arcade", specifier = ">=3.3.3" },
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "mazegenerator", path = "src/maze/mazegenerator-2.1.0-py3-none-any.whl" },
@@ -191,8 +187,6 @@ requires-dist = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "pillow"
 version = "11.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -396,7 +390,6 @@ wheels = [
 ]
 
 [[package]]
->>>>>>> nono
 name = "uv"
 version = "0.11.28"
 source = { registry = "https://pypi.org/simple" }

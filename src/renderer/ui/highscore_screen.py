@@ -18,6 +18,7 @@ class HighscoreView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
+        self.window = arcade.get_window()
         self.text_list: list[arcade.Text] = []
 
         # Loads the background

@@ -3,7 +3,8 @@
 import os
 import arcade
 
-from src.engine.game import Game, Cheats
+from src.engine.game import Cheats
+from src.renderer.game_mode import GameView
 
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
@@ -17,9 +18,11 @@ class CheatView(arcade.View):
     """
     def __init__(self) -> None:
         super().__init__()
+        self.window = arcade.get_window()
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
-        self.game: Game = self.window.game
+
+        self.game: GameView = self.window.game_view
         self.cheats: Cheats = self.window.cheats
 
         self._load()
@@ -41,53 +44,60 @@ class CheatView(arcade.View):
 
                 if self.cheats.invincible is False:
                     self.cheats.invincible = True
+                    print("Invicibility activated")
 
                 else:
                     self.cheats.invincible = False
-
-                print("Invicibility activated")
+                    print("Invicibility deactivated")
 
             if sprite == self.skip:
                 arcade.play_sound(self.effect)
+                self.game.lvl_nb += 1
+                if len(self.game.lvl) - 1 > self.game.lvl_nb:
+                    lvl_width: int = self.game.lvl[self.game.lvl_nb]["width"]
+                    lvl_height: int = self.game.lvl[self.game.lvl_nb]["height"]
 
-                self.game.skip_level()
+                    self.game.next_level(lvl_width, lvl_height)
+                    self.window.switch_game(True)
 
-                print("Skipping level")
+                else:
+                    self.window.switch_end(True, self.game.score)
+                print(f"Level {self.game.lvl_nb} skipped")
 
             if sprite == self.stop_ghost:
                 arcade.play_sound(self.effect)
 
                 if self.cheats.freeze_ghosts is False:
                     self.cheats.freeze_ghosts = True
+                    print("Ghosts freezed")
 
                 else:
                     self.cheats.freeze_ghosts = False
-
-                print("Stopping the ghosts")
+                    print("Ghosts unfreezed")
 
             if sprite == self.more_lives:
                 arcade.play_sound(self.effect)
 
-                self.game.add_life()
-
-                print("Adds a life")
+                self.game.life += 1
+                print("Life added")
 
             if sprite == self.more_speed:
                 arcade.play_sound(self.effect)
 
                 if self.cheats.speed_boost is False:
                     self.cheats.speed_boost = True
+                    self.game.speed *= 2
+                    print("Speed added")
 
                 else:
                     self.cheats.speed_boost = False
-
-                print("Adds speed")
+                    self.game.speed /= 2
+                    print("Speed removed")
 
             if sprite == self.resume:
                 arcade.play_sound(self.effect)
 
-                self.window.switch_game()
-
+                self.window.switch_game(False)
                 print("Resume Game")
 
     def on_draw(self) -> None:
