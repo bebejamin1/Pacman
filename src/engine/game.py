@@ -6,7 +6,7 @@ from typing import Any
 
 from src.engine.algo import Cell, Greddy, Mode, Personality
 from src.engine.entities import Ghost, GhostState, Player
-from src.engine.level import Eaten, Level
+from src.engine.level import Eaten, Level  # noqa
 
 
 # *****************************************************************************
@@ -78,7 +78,6 @@ PERSONALITIES: tuple[Personality, ...] = (
 # *****************************************************************************
 # *                                   GAME                                    *
 # *                                                                           *
-
 class Game:
     def __init__(self, rules: Rules, first_maze: list[list[int]],
                  total_levels: int) -> None:
@@ -112,8 +111,8 @@ class Game:
 # ================================ NEXT LEVEL =================================
 
     def next_level(self, maze: list[list[int]]) -> None:
-        if (self.state is GameState.LEVEL_WON):
-            self._load(maze)
+        # if (self.state is GameState.LEVEL_WON):
+        self._load(maze)
 
 # ================================ SKIP LEVEL =================================
 
