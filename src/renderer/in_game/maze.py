@@ -396,7 +396,7 @@ class Maze():
         return (nx, ny)
 
     # les parenthese etait mal placer du coup le calcul etait un peu casser
-    def convert_cell_coords(self, screen_x: int, screen_y: int) -> Cell:
+    def convert_cell_coords(self, screen_x: float, screen_y: float) -> Cell:
 
         # nx = round(screen_x - (self.width / 2 - self.offset_x)
         #            / self.size)  # avant  # noqa

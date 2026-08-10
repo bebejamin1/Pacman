@@ -1,6 +1,10 @@
 {
   "scores": [
     {
+      "player_name": "testrun",
+      "player_score": 8400
+    },
+    {
       "player_name": "gggegf",
       "player_score": 2330
     },
@@ -35,10 +39,6 @@
     {
       "player_name": "dsgesg",
       "player_score": 780
-    },
-    {
-      "player_name": "test",
-      "player_score": 670
     }
   ]
 }

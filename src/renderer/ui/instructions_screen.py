@@ -1,6 +1,10 @@
 import os
 import arcade
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 # ----| CONSTANTS |---- #
 PATH = "assets/menu/"
 FONT_PATH = "assets/font/"
@@ -11,9 +15,9 @@ class InstructionsView(arcade.View):
     """
     This class will display the game's control and instructions.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
-        self.window = arcade.get_window()
+        self.window: GameEngine = window
         self.text_list: list[arcade.Text] = []
 
         # Loads the background

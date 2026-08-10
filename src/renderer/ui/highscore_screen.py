@@ -5,6 +5,10 @@ import arcade
 
 from src.parsing.parse_main import leaderboard_extract
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 # ----| CONSTANTS |---- #
 PATH = "assets/menu/"
 FONT_PATH = "assets/font/"
@@ -16,9 +20,9 @@ class HighscoreView(arcade.View):
     """
     This class displays the leaderboard.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
-        self.window = arcade.get_window()
+        self.window: GameEngine = window
         self.text_list: list[arcade.Text] = []
 
         # Loads the background

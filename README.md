@@ -69,9 +69,6 @@ A more detailed version of the management can be found `[place it can be found]`
 - https://api.arcade.academy/en/development/index.html
 
 ### GitHub
-<<<<<<< HEAD
--
-=======
 - [noemiepi](https://github.com/noemiepi/A-Maze-ing)
 
 - [Overtekk](https://github.com/Overtekk/PacMan)

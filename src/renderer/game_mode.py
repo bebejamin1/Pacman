@@ -10,6 +10,10 @@ from src.engine.algo import Cell, Mode
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Player, Enemies
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 from src.parsing.parse import parse_conf
 
 # ----| CONSTANTS |---- #
@@ -31,8 +35,10 @@ class GameView(arcade.View):
     This class will show the game and make the user
     able to control the character's movement.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
+        self.window: GameEngine = window
+
         self.config: list[Any] = parse_conf("data/config.json")
         self.seed: int = self.config[1].get("seed")
         self.total_time: int = self.config[1].get("level_max_time")
@@ -49,6 +55,12 @@ class GameView(arcade.View):
         self.cheats: Cheats = self.window.cheats
         self.speed: float = 1.25
         self.score: Any = 0
+
+        self.level_text: arcade.Text
+        self.timer_text: arcade.Text
+        self.life_text: arcade.Text
+        self.score_text: arcade.Text
+        self.text: arcade.Text
 
     def setup(self) -> None:
         if self.lvl_nb == 0:
