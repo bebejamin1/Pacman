@@ -117,5 +117,5 @@ class GameEngine(arcade.Window):
                    play: bool = True) -> None:
         if play is True:
             self.play = arcade.play_sound(sound=music, loop=loop)
-        if play is False:
+        if play is False and self.play is not None:
             arcade.stop_sound(self.play)
