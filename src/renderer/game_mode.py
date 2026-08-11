@@ -6,7 +6,7 @@ import arcade
 from typing import Any
 
 from src.engine.game import Cheats
-from src.engine.algo import Cell, Mode
+from src.engine.algo import Cell, Mode, MOVES
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Player, Enemies
 
@@ -25,8 +25,13 @@ SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.65
 
 GHOST_SPEED = 0.7
+PLAYER_SPEED = 0.45
 FRIGHT_TIME = 10.0
 GHOST_RESPAWN_TIME = 7.0
+
+# Maps a (dx, dy) move to the wall bit that blocks it, same convention
+# used by the ghosts' pathfinding (src/engine/algo.py).
+DIRECTION_WALL: dict[Cell, int] = {(dx, dy): wall for dx, dy, wall in MOVES}
 # --------------------- #
 
 
@@ -51,10 +56,15 @@ class GameView(arcade.View):
         self.flee: bool = False
         self._flee_timer: float = FRIGHT_TIME
         self._ghost_clock = 0.0
+        self._ghost_at_midpoint: bool = False
 
         self.cheats: Cheats = self.window.cheats
-        self.speed: float = 1.25
         self.score: Any = 0
+
+        self._player_clock: float = 0.0
+        self._player_at_midpoint: bool = False
+        self.player_dir: Cell = (0, 0)
+        self.player_next_dir: Cell = (0, 0)
 
         self.level_text: arcade.Text
         self.timer_text: arcade.Text
@@ -152,6 +162,7 @@ class GameView(arcade.View):
         self.cyan.update_animation(delta_time, None, None)
         self.pink.update_animation(delta_time, None, None)
 
+        self._move_player(delta_time)
         self._move_ghosts(delta_time)
 
         # Count down for the ghosts fleeing
@@ -232,6 +243,9 @@ class GameView(arcade.View):
                     self.window.switch_end(False, self.score)
                 else:
                     self.maze._restart_level()
+                    self.player_dir = (0, 0)
+                    self.player_next_dir = (0, 0)
+                    self._player_at_midpoint = False
                     self.time_elapsed = self.config[1].get("level_max_time")
 
         # Updates the HUD
@@ -261,59 +275,40 @@ class GameView(arcade.View):
             mode = Mode.CHASE
             step = GHOST_SPEED * 1.0
 
-        if self._ghost_clock < step:
+        half_step = step / 2
+        if self._ghost_clock < half_step:
             return
 
         player_cell = self.maze.convert_cell_coords(self.player.center_x,
                                                     self.player.center_y)
         player_dir = self._player_direction()
 
-        while self._ghost_clock >= step:
-            self._ghost_clock -= step
+        while self._ghost_clock >= half_step:
+            self._ghost_clock -= half_step
+            self._ghost_at_midpoint = not self._ghost_at_midpoint
 
-            new_cell = self.red.next_move(player_cell, player_dir, mode)
-            new_x, new_y = self.maze.convert_screen_coords(
-                (new_cell[0] * 2, new_cell[1] * 2))
-            self.red.center_x = new_x
-            self.red.center_y = new_y
+            for ghost in (self.red, self.orange, self.cyan, self.pink):
+                if self._ghost_at_midpoint:
+                    # First hop: decide the next cell and stop halfway,
+                    # on the corridor tile between the two cells.
+                    old_cell = ghost.cell
+                    new_cell = ghost.next_move(player_cell, player_dir, mode)
+                    dx = new_cell[0] - old_cell[0]
+                    dy = new_cell[1] - old_cell[1]
+                    new_x, new_y = self.maze.convert_screen_coords(
+                        (old_cell[0] * 2 + dx, old_cell[1] * 2 + dy))
+                else:
+                    # Second hop: finish the move onto the target cell.
+                    new_x, new_y = self.maze.convert_screen_coords(
+                        (ghost.cell[0] * 2, ghost.cell[1] * 2))
 
-            # Hides the eaten ghosts outside the maze
-            if self.red.eaten:
-                self.red.center_x = -1000
-                self.red.center_y = -1000
+                ghost.center_x = new_x
+                ghost.center_y = new_y
 
-            new_cell = self.orange.next_move(player_cell, player_dir, mode)
-            new_x, new_y = self.maze.convert_screen_coords(
-                (new_cell[0] * 2, new_cell[1] * 2))
-            self.orange.center_x = new_x
-            self.orange.center_y = new_y
-
-            # Hides the eaten ghosts outside the maze
-            if self.orange.eaten:
-                self.orange.center_x = -1000
-                self.orange.center_y = -1000
-
-            new_cell = self.cyan.next_move(player_cell, player_dir, mode)
-            new_x, new_y = self.maze.convert_screen_coords(
-                (new_cell[0] * 2, new_cell[1] * 2))
-            self.cyan.center_x = new_x
-            self.cyan.center_y = new_y
-
-            # Hides the eaten ghosts outside the maze
-            if self.cyan.eaten:
-                self.cyan.center_x = -1000
-                self.cyan.center_y = -1000
-
-            new_cell = self.pink.next_move(player_cell, player_dir, mode)
-            new_x, new_y = self.maze.convert_screen_coords(
-                (new_cell[0] * 2, new_cell[1] * 2))
-            self.pink.center_x = new_x
-            self.pink.center_y = new_y
-
-            # Hides the eaten ghosts outside the maze
-            if self.pink.eaten:
-                self.pink.center_x = -1000
-                self.pink.center_y = -1000
+                # Hides the eaten ghosts outside the maze
+                if ghost.eaten:
+                    ghost.center_x = -1000
+                    ghost.center_y = -1000
 
     def _eat_ghost(self, ghost: Enemies) -> None:
         # Starts the cooldown
@@ -339,15 +334,64 @@ class GameView(arcade.View):
         ghost.brain.reset()
 
     def _player_direction(self) -> Cell:
-        if self.player.change_x > 0:
-            return (1, 0)
-        if self.player.change_x < 0:
-            return (-1, 0)
-        if self.player.change_y > 0:
-            return (0, -1)
-        if self.player.change_y < 0:
-            return (0, 1)
-        return (0, 0)
+        return self.player_dir
+
+    def _can_step(self, cell: Cell, direction: Cell) -> bool:
+        x, y = cell
+        dx, dy = direction
+        nx, ny = x + dx, y + dy
+
+        maze = self.maze.maze
+        height, width = len(maze), len(maze[0])
+
+        return (0 <= nx < width and 0 <= ny < height
+                and not maze[y][x] & DIRECTION_WALL[direction]
+                and maze[ny][nx] != 15)
+
+    def _move_player(self, delta_time: float) -> None:
+        self._player_clock += delta_time
+        half_step = PLAYER_SPEED / 2
+
+        # Same two-hop mechanism as the ghosts: stop on the corridor
+        # tile between two cells instead of jumping straight to the
+        # next cell, so every visible tile is an actual step.
+        while self._player_clock >= half_step:
+            self._player_clock -= half_step
+            self._player_at_midpoint = not self._player_at_midpoint
+
+            if self._player_at_midpoint:
+                # Prefer the last requested turn; if it's blocked, keep
+                # going the same way until that turn opens up.
+                direction = self.player_dir
+                if (self.player_next_dir != (0, 0)
+                        and self._can_step(self.player.cell,
+                                           self.player_next_dir)):
+                    direction = self.player_next_dir
+
+                if (direction == (0, 0)
+                        or not self._can_step(self.player.cell, direction)):
+                    self._player_at_midpoint = False
+                    continue
+
+                self.player_dir = direction
+                dx, dy = direction
+                new_x, new_y = self.maze.convert_screen_coords(
+                    (self.player.cell[0] * 2 + dx,
+                     self.player.cell[1] * 2 + dy))
+
+                if dx > 0:
+                    self.player.scale_x = 0.6 * CHARACTER_SIZE
+                elif dx < 0:
+                    self.player.scale_x = -0.6 * CHARACTER_SIZE
+            else:
+                x, y = self.player.cell
+                dx, dy = self.player_dir
+                self.player.cell = (x + dx, y + dy)
+                new_x, new_y = self.maze.convert_screen_coords(
+                    (self.player.cell[0] * 2, self.player.cell[1] * 2))
+
+            self.player.center_x = new_x
+            self.player.center_y = new_y
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
@@ -360,25 +404,13 @@ class GameView(arcade.View):
             self.window.switch_cheat()
 
         elif symbol == arcade.key.UP or symbol == arcade.key.W:
-            self.player.change_y += self.speed
+            self.player_next_dir = (0, -1)
         elif symbol == arcade.key.DOWN or symbol == arcade.key.S:
-            self.player.change_y -= self.speed
+            self.player_next_dir = (0, 1)
         elif symbol == arcade.key.LEFT or symbol == arcade.key.A:
-            self.player.change_x -= self.speed
-            self.player.scale_x = -0.6 * CHARACTER_SIZE
+            self.player_next_dir = (-1, 0)
         elif symbol == arcade.key.RIGHT or symbol == arcade.key.D:
-            self.player.change_x += self.speed
-            self.player.scale_x = 0.6 * CHARACTER_SIZE
-
-    def on_key_release(self, symbol: int, modifiers: int) -> None:
-        if symbol == arcade.key.UP or symbol == arcade.key.W:
-            self.player.change_y = 0
-        elif symbol == arcade.key.DOWN or symbol == arcade.key.S:
-            self.player.change_y = 0
-        elif symbol == arcade.key.LEFT or symbol == arcade.key.A:
-            self.player.change_x = 0
-        elif symbol == arcade.key.RIGHT or symbol == arcade.key.D:
-            self.player.change_x = 0
+            self.player_next_dir = (1, 0)
 
     def _load_hud(self) -> None:
         self.life = self.config[1].get("live")
@@ -451,6 +483,11 @@ class GameView(arcade.View):
         self.pink = self.maze.pink
 
         self._ghost_clock = 0.0
+        self._ghost_at_midpoint = False
+        self._player_clock = 0.0
+        self._player_at_midpoint = False
+        self.player_dir = (0, 0)
+        self.player_next_dir = (0, 0)
 
         self.time_elapsed = self.config[1].get("level_max_time")
 

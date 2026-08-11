@@ -7,6 +7,8 @@ from src.engine.algo import Greddy, Personality, Cell, Mode
 
 # ----| CONSTANTS |---- #
 ANIM_SPEED = 5
+HIT_BOX_HALF_WIDTH = 45.0  # ne pas mettre 50 sinon il traverse
+HIT_BOX_HALF_HEIGHT = 45.0
 # --------------------- #
 
 
@@ -21,6 +23,21 @@ class Player(arcade.Sprite):
         self.curr_texture: int = 0
         self.animation: list[arcade.Texture] = character_animation
         self.timer: float = 0.0
+
+        # Logical maze cell the player currently sits on, mirroring how
+        # the ghosts track their own grid position (see Enemies.cell).
+        self.cell: Cell = (0, 0)
+
+        # The walk textures have an off-center hit box (the auto-detected
+        # silhouette isn't centered on the 128x128 canvas), which makes the
+        # player clip the maze's corner walls when moving left/right. A
+        # centered rectangle keeps collisions symmetric in every direction;
+        # sized just under the maze's corner-wall clearance so it never
+        # snags a corner, closely matching the visible sprite.
+        hw, hh = HIT_BOX_HALF_WIDTH, HIT_BOX_HALF_HEIGHT
+        self.hit_box = arcade.hitbox.HitBox(
+            ((-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)),
+            self.position, self.scale)
 
     def update_animation(self, delta_time: float = 1 / 60,
                          *args: Any, **kwargs: Any) -> None:
@@ -64,4 +81,3 @@ class Enemies(arcade.Sprite):
             self.cell, player_pos, player_dir, mode)
 
         return self.cell
-

@@ -259,16 +259,17 @@ class Maze():
         new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = new_x
         self.player.center_y = new_y
+        self.player.cell = (x, y)
 
         self.player_list.append(self.player)
 
     def _load_enemies(self) -> None:
         try:
-                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png")
-                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png")
-                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png")
-                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png")
-                arcade.load_texture(f"{ENEMY_PATH}defeated/dead_ghost.png")
+            arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png")
+            arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png")
+            arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png")
+            arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png")
+            arcade.load_texture(f"{ENEMY_PATH}defeated/dead_ghost.png")
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
@@ -335,6 +336,7 @@ class Maze():
         nx, ny = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = nx
         self.player.center_y = ny
+        self.player.cell = (x, y)
 
         # Ghosts' respawn
         i: int = 0
