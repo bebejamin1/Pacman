@@ -62,7 +62,8 @@ class GameView(arcade.View):
         self.score_text: arcade.Text
         self.text: arcade.Text
 
-    def setup(self) -> None:
+    def setup(self, lvl_nb: int) -> None:
+        self.lvl_nb = lvl_nb
         if self.lvl_nb == 0:
             self._maze_generation()
         else:
