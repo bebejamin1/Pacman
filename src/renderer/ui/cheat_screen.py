@@ -6,6 +6,10 @@ import arcade
 from src.engine.game import Cheats
 from src.renderer.game_mode import GameView
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
@@ -16,9 +20,9 @@ class CheatView(arcade.View):
     """
     This class manages the pause menu.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
-        self.window = arcade.get_window()
+        self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 

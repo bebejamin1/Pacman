@@ -2,7 +2,7 @@
 #     Variables     #
 # ----------------- #
 
-PYTHON=uv run python
+PYTHON=python3
 
 FLAKE8=uv run flake8
 MYPY=uv run mypy

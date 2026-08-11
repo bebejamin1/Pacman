@@ -6,7 +6,7 @@ from typing import Any
 
 from src.engine.algo import Cell, Greddy, Mode, Personality
 from src.engine.entities import Ghost, GhostState, Player
-from src.engine.level import Eaten, Level  # noqa
+from src.engine.level import Eaten, Level
 
 
 # *****************************************************************************

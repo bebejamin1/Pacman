@@ -5,6 +5,10 @@ import arcade
 
 from src.parsing.parse_main import leaderbord_update
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
@@ -15,9 +19,9 @@ class EndView(arcade.View):
     """
     This class manages the finish screen (Game Over and Victory).
     """
-    def __init__(self, win: bool, score: int) -> None:
+    def __init__(self, window: "GameEngine", win: bool, score: int) -> None:
         super().__init__()
-        self.window = arcade.get_window()
+        self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 

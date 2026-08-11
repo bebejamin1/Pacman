@@ -3,6 +3,10 @@
 import os
 import arcade
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
@@ -13,9 +17,9 @@ class PauseView(arcade.View):
     """
     This class manages the pause menu.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
-        self.window = arcade.get_window()
+        self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
 
@@ -110,7 +114,6 @@ class PauseView(arcade.View):
                 arcade.load_texture(f"{PATH}maze_back.png")
 
             # Loads the music and effect
-            # self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
             # Loads the text

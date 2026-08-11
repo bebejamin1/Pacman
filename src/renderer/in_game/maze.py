@@ -155,12 +155,11 @@ class Maze():
                     self._build_ground(screen_x + 1, screen_y - 1)
                     self._build_ground(screen_x + 1, screen_y + 1)
 
-        for cell in self.level.pacgums:
+        for pac_cell in self.level.pacgums:
             if random() <= PAC_CHANCE:
-                self._build_pacgum(cell)
+                self._build_pacgum(pac_cell)
 
-    def _build_walls(self, x: float, y: float,
-                     wall: str, angle: float) -> None:
+    def _build_walls(self, x: int, y: int, wall: str, angle: float) -> None:
         try:
             front_wall = Object(wall, self.scale, angle)
 
@@ -174,7 +173,7 @@ class Maze():
 
         self.wall_list.append(front_wall)
 
-    def _build_ground(self, x: float, y: float) -> None:
+    def _build_ground(self, x: int, y: int) -> None:
         try:
             ground = Object(GROUND, self.scale, 0)
 
@@ -220,7 +219,7 @@ class Maze():
     def _load_entities(self) -> None:
         # Clears the entities lists
         self.player_list.clear()
-        # self.enemies.clear()
+
         self.red_lst.clear()
         self.orange_lst.clear()
         self.cyan_lst.clear()
@@ -265,18 +264,11 @@ class Maze():
 
     def _load_enemies(self) -> None:
         try:
-            red_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png"),
-            ]
-            orange_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png"),
-            ]
-            cyan_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png"),
-            ]
-            pink_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png"),
-            ]
+                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}defeated/dead_ghost.png")
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
@@ -285,33 +277,36 @@ class Maze():
         for cell in self.level.corners:
             x, y = cell
             new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
-            spawn: Cell = (int(new_x), int(new_y))
 
             if i == 0:
                 self.red = Enemies(f"{ENEMY_PATH}alive/red_ghost.png",
-                                   self.scale / 1.5, red_anim,
-                                   self.maze, Personality.CHASER, spawn)
+                                   f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                   self.scale / 1.5, self.maze,
+                                   Personality.CHASER, cell)
                 self.red.center_x = new_x
                 self.red.center_y = new_y
 
             if i == 1:
                 self.orange = Enemies(f"{ENEMY_PATH}alive/orange_ghost.png",
-                                      self.scale / 1.5, orange_anim,
-                                      self.maze, Personality.SHY, spawn)
+                                      f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                      self.scale / 1.5, self.maze,
+                                      Personality.SHY, cell)
                 self.orange.center_x = new_x
                 self.orange.center_y = new_y
 
             if i == 2:
                 self.cyan = Enemies(f"{ENEMY_PATH}alive/cyan_ghost.png",
-                                    self.scale / 1.5, cyan_anim,
-                                    self.maze, Personality.RANDOM, spawn)
+                                    f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                    self.scale / 1.5, self.maze,
+                                    Personality.RANDOM, cell)
                 self.cyan.center_x = new_x
                 self.cyan.center_y = new_y
 
             if i == 3:
                 self.pink = Enemies(f"{ENEMY_PATH}alive/pink_ghost.png",
-                                    self.scale / 1.5, pink_anim,
-                                    self.maze, Personality.AMBUSHER, spawn)
+                                    f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                    self.scale / 1.5, self.maze,
+                                    Personality.AMBUSHER, cell)
                 self.pink.center_x = new_x
                 self.pink.center_y = new_y
 
@@ -377,16 +372,18 @@ class Maze():
         x, y = cell
 
         nx = round(x * self.size + (self.width / 2) -
-                      ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
+                   ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
         ny = round((self.height - 100) - (y * self.size) +
-                      ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
+                   ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
 
         return (nx, ny)
 
-    def convert_cell_coords(self, screen_x: int, screen_y: int) -> Cell:
-        nx = round(screen_x - (self.width / 2 - self.offset_x) / self.size)
+    def convert_cell_coords(self, screen_x: float, screen_y: float) -> Cell:
+
+        nx = round((screen_x - (self.width / 2 - self.offset_x))
+                   / self.size)
+
         ny = round(((self.height - 100 - self.offset_y)
-                       - screen_y) / self.size)
+                    - screen_y) / self.size)
 
         return (nx, ny)
-

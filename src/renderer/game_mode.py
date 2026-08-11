@@ -10,6 +10,10 @@ from src.engine.algo import Cell, Mode
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Player, Enemies
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.renderer.game_engine import GameEngine
+
 from src.parsing.parse import parse_conf
 
 # ----| CONSTANTS |---- #
@@ -20,8 +24,9 @@ MUSIC_PATH = "assets/sound/"
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.65
 
-GHOST_SPEED = 0.2
+GHOST_SPEED = 0.7
 FRIGHT_TIME = 10.0
+GHOST_RESPAWN_TIME = 7.0
 # --------------------- #
 
 
@@ -30,8 +35,10 @@ class GameView(arcade.View):
     This class will show the game and make the user
     able to control the character's movement.
     """
-    def __init__(self) -> None:
+    def __init__(self, window: "GameEngine") -> None:
         super().__init__()
+        self.window: GameEngine = window
+
         self.config: list[Any] = parse_conf("data/config.json")
         self.seed: int = self.config[1].get("seed")
         self.total_time: int = self.config[1].get("level_max_time")
@@ -48,6 +55,12 @@ class GameView(arcade.View):
         self.cheats: Cheats = self.window.cheats
         self.speed: float = 1.25
         self.score: Any = 0
+
+        self.level_text: arcade.Text
+        self.timer_text: arcade.Text
+        self.life_text: arcade.Text
+        self.score_text: arcade.Text
+        self.text: arcade.Text
 
     def setup(self) -> None:
         if self.lvl_nb == 0:
@@ -71,14 +84,21 @@ class GameView(arcade.View):
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
 
-        self.red_physic_engine = arcade.PhysicsEngineSimple(self.red,
-                                                            self.maze.wall_list)
-        self.orange_physic_engine = arcade.PhysicsEngineSimple(self.orange,
-                                                            self.maze.wall_list)
-        self.cyan_physic_engine = arcade.PhysicsEngineSimple(self.cyan,
-                                                            self.maze.wall_list)
-        self.pink_physic_engine = arcade.PhysicsEngineSimple(self.pink,
-                                                            self.maze.wall_list)
+        self.red_physic_engine = arcade.PhysicsEngineSimple(
+            self.red, self.maze.wall_list
+                                                           )
+
+        self.orange_physic_engine = arcade.PhysicsEngineSimple(
+            self.orange, self.maze.wall_list
+                                                              )
+
+        self.cyan_physic_engine = arcade.PhysicsEngineSimple(
+            self.cyan, self.maze.wall_list
+                                                            )
+
+        self.pink_physic_engine = arcade.PhysicsEngineSimple(
+            self.pink, self.maze.wall_list
+                                                            )
 
     def on_draw(self) -> None:
         self.clear()
@@ -141,6 +161,13 @@ class GameView(arcade.View):
                 self.flee = False
                 self._flee_timer = 0.0
 
+        self.red.update_sprite(self.flee)
+        self.orange.update_sprite(self.flee)
+        self.cyan.update_sprite(self.flee)
+        self.pink.update_sprite(self.flee)
+
+        self._tick_ghost_respawn(delta_time)
+
         # Checks the collisions with collectibles
         pac_hit = arcade.check_for_collision_with_list(self.player,
                                                        self.maze.pacgum_list)
@@ -169,6 +196,7 @@ class GameView(arcade.View):
                 self.score_text.text = self.score
                 p.kill()
                 self.flee = True
+                self._flee_timer = FRIGHT_TIME
 
         # Checks the collisions with other entities
         red_hit = arcade.check_for_collision_with_list(self.player,
@@ -185,7 +213,17 @@ class GameView(arcade.View):
                 self.score += self.rules.get("ghost_points")
                 self.score_text.text = self.score
 
-            if self.cheats.invincible is True:
+                # Eaten ghost goes back to its spawn
+                if red_hit:
+                    self._eat_ghost(self.red)
+                if orange_hit:
+                    self._eat_ghost(self.orange)
+                if cyan_hit:
+                    self._eat_ghost(self.cyan)
+                if pink_hit:
+                    self._eat_ghost(self.pink)
+
+            elif self.cheats.invincible is True:
                 pass
 
             else:
@@ -211,8 +249,8 @@ class GameView(arcade.View):
             self.window.switch_end(False, self.score)
 
     def _move_ghosts(self, delta_time: float) -> None:
-        # if self.cheats.freeze_ghosts:
-        #     return
+        if self.cheats.freeze_ghosts:
+            return
 
         self._ghost_clock += delta_time
 
@@ -234,24 +272,71 @@ class GameView(arcade.View):
             self._ghost_clock -= step
 
             new_cell = self.red.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            new_x, new_y = self.maze.convert_screen_coords(
+                (new_cell[0] * 2, new_cell[1] * 2))
             self.red.center_x = new_x
             self.red.center_y = new_y
 
+            # Hides the eaten ghosts outside the maze
+            if self.red.eaten:
+                self.red.center_x = -1000
+                self.red.center_y = -1000
+
             new_cell = self.orange.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            new_x, new_y = self.maze.convert_screen_coords(
+                (new_cell[0] * 2, new_cell[1] * 2))
             self.orange.center_x = new_x
             self.orange.center_y = new_y
 
+            # Hides the eaten ghosts outside the maze
+            if self.orange.eaten:
+                self.orange.center_x = -1000
+                self.orange.center_y = -1000
+
             new_cell = self.cyan.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            new_x, new_y = self.maze.convert_screen_coords(
+                (new_cell[0] * 2, new_cell[1] * 2))
             self.cyan.center_x = new_x
             self.cyan.center_y = new_y
 
+            # Hides the eaten ghosts outside the maze
+            if self.cyan.eaten:
+                self.cyan.center_x = -1000
+                self.cyan.center_y = -1000
+
             new_cell = self.pink.next_move(player_cell, player_dir, mode)
-            new_x, new_y = new_cell
+            new_x, new_y = self.maze.convert_screen_coords(
+                (new_cell[0] * 2, new_cell[1] * 2))
             self.pink.center_x = new_x
             self.pink.center_y = new_y
+
+            # Hides the eaten ghosts outside the maze
+            if self.pink.eaten:
+                self.pink.center_x = -1000
+                self.pink.center_y = -1000
+
+    def _eat_ghost(self, ghost: Enemies) -> None:
+        # Starts the cooldown
+        ghost.eaten = True
+        ghost.respawn_timer = GHOST_RESPAWN_TIME
+
+    def _tick_ghost_respawn(self, delta_time: float) -> None:
+        for ghost in (self.red, self.orange, self.cyan, self.pink):
+            if not ghost.eaten:
+                continue
+
+            ghost.respawn_timer -= delta_time
+            if ghost.respawn_timer <= 0:
+                self._respawn_ghost(ghost)
+
+    def _respawn_ghost(self, ghost: Enemies) -> None:
+        ghost.eaten = False
+        x, y = ghost.spawn
+        nx, ny = self.maze.convert_screen_coords((x * 2, y * 2))
+        ghost.center_x = nx
+        ghost.center_y = ny
+        ghost.cell = ghost.spawn
+        ghost.brain.reset()
 
     def _player_direction(self) -> Cell:
         if self.player.change_x > 0:
