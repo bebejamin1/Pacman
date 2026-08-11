@@ -24,16 +24,8 @@ class Player(arcade.Sprite):
         self.animation: list[arcade.Texture] = character_animation
         self.timer: float = 0.0
 
-        # Logical maze cell the player currently sits on, mirroring how
-        # the ghosts track their own grid position (see Enemies.cell).
-        self.cell: Cell = (0, 0)
+        self.cell: Cell = (0, 0)  # ajout: la case des fantomes
 
-        # The walk textures have an off-center hit box (the auto-detected
-        # silhouette isn't centered on the 128x128 canvas), which makes the
-        # player clip the maze's corner walls when moving left/right. A
-        # centered rectangle keeps collisions symmetric in every direction;
-        # sized just under the maze's corner-wall clearance so it never
-        # snags a corner, closely matching the visible sprite.
         hw, hh = HIT_BOX_HALF_WIDTH, HIT_BOX_HALF_HEIGHT
         self.hit_box = arcade.hitbox.HitBox(
             ((-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)),

@@ -6,7 +6,7 @@ import arcade
 from typing import Any
 
 from src.engine.game import Cheats
-from src.engine.algo import Cell, Mode, MOVES
+from src.engine.algo import Cell, Mode, MOVES  # ajout: MOVES
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Player, Enemies
 
@@ -25,12 +25,11 @@ SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.65
 
 GHOST_SPEED = 0.7
-PLAYER_SPEED = 0.45
+PLAYER_SPEED = 0.45  # ajout: temps(s) refresh case du joueur
 FRIGHT_TIME = 10.0
 GHOST_RESPAWN_TIME = 7.0
 
-# Maps a (dx, dy) move to the wall bit that blocks it, same convention
-# used by the ghosts' pathfinding (src/engine/algo.py).
+# ajout: associe une direction (dx, dy) au bit de mur qui la bloque, meme
 DIRECTION_WALL: dict[Cell, int] = {(dx, dy): wall for dx, dy, wall in MOVES}
 # --------------------- #
 
@@ -56,11 +55,13 @@ class GameView(arcade.View):
         self.flee: bool = False
         self._flee_timer: float = FRIGHT_TIME
         self._ghost_clock = 0.0
+        # ajout: alterne entre les 2 demipas du deplacement des fantomes
         self._ghost_at_midpoint: bool = False
 
         self.cheats: Cheats = self.window.cheats
         self.score: Any = 0
 
+        # ajout: etat du deplacement case par case du joueur
         self._player_clock: float = 0.0
         self._player_at_midpoint: bool = False
         self.player_dir: Cell = (0, 0)
@@ -243,6 +244,7 @@ class GameView(arcade.View):
                     self.window.switch_end(False, self.score)
                 else:
                     self.maze._restart_level()
+                    # ajout: reinitialise le deplacement du joueur au respawn
                     self.player_dir = (0, 0)
                     self.player_next_dir = (0, 0)
                     self._player_at_midpoint = False
@@ -275,6 +277,7 @@ class GameView(arcade.View):
             mode = Mode.CHASE
             step = GHOST_SPEED * 1.0
 
+        # ajout: evite de sauter 2 case
         half_step = step / 2
         if self._ghost_clock < half_step:
             return
@@ -283,14 +286,14 @@ class GameView(arcade.View):
                                                     self.player.center_y)
         player_dir = self._player_direction()
 
+        # ajout: meme chose evite de sauter 2 case mais pour les 4 fantomes
         while self._ghost_clock >= half_step:
             self._ghost_clock -= half_step
             self._ghost_at_midpoint = not self._ghost_at_midpoint
 
             for ghost in (self.red, self.orange, self.cyan, self.pink):
                 if self._ghost_at_midpoint:
-                    # First hop: decide the next cell and stop halfway,
-                    # on the corridor tile between the two cells.
+                    # ajout: demi pas decide de quel case il prend
                     old_cell = ghost.cell
                     new_cell = ghost.next_move(player_cell, player_dir, mode)
                     dx = new_cell[0] - old_cell[0]
@@ -298,7 +301,7 @@ class GameView(arcade.View):
                     new_x, new_y = self.maze.convert_screen_coords(
                         (old_cell[0] * 2 + dx, old_cell[1] * 2 + dy))
                 else:
-                    # Second hop: finish the move onto the target cell.
+                    # ajout: demi pas entier termine le trajet
                     new_x, new_y = self.maze.convert_screen_coords(
                         (ghost.cell[0] * 2, ghost.cell[1] * 2))
 
@@ -333,9 +336,11 @@ class GameView(arcade.View):
         ghost.cell = ghost.spawn
         ghost.brain.reset()
 
+    # ajout: direction du joeur
     def _player_direction(self) -> Cell:
         return self.player_dir
 
+    # ajout: verirfie si le joueur peu avancer
     def _can_step(self, cell: Cell, direction: Cell) -> bool:
         x, y = cell
         dx, dy = direction
@@ -348,20 +353,18 @@ class GameView(arcade.View):
                 and not maze[y][x] & DIRECTION_WALL[direction]
                 and maze[ny][nx] != 15)
 
+    # ajout: deplacement du joueur
     def _move_player(self, delta_time: float) -> None:
         self._player_clock += delta_time
         half_step = PLAYER_SPEED / 2
 
-        # Same two-hop mechanism as the ghosts: stop on the corridor
-        # tile between two cells instead of jumping straight to the
-        # next cell, so every visible tile is an actual step.
         while self._player_clock >= half_step:
             self._player_clock -= half_step
             self._player_at_midpoint = not self._player_at_midpoint
 
             if self._player_at_midpoint:
-                # Prefer the last requested turn; if it's blocked, keep
-                # going the same way until that turn opens up.
+                # ajout: permet de bloquer sur une direction demander et tant
+                # que bloquer continue sur la direction de base
                 direction = self.player_dir
                 if (self.player_next_dir != (0, 0)
                         and self._can_step(self.player.cell,
@@ -393,6 +396,7 @@ class GameView(arcade.View):
             self.player.center_x = new_x
             self.player.center_y = new_y
 
+    # ajout: change de direction dans le talbeau grace aux coordonnee
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.ESCAPE:
             self.window.switch_menu()
@@ -483,11 +487,11 @@ class GameView(arcade.View):
         self.pink = self.maze.pink
 
         self._ghost_clock = 0.0
-        self._ghost_at_midpoint = False
-        self._player_clock = 0.0
-        self._player_at_midpoint = False
-        self.player_dir = (0, 0)
-        self.player_next_dir = (0, 0)
+        self._ghost_at_midpoint = False  # ajout
+        self._player_clock = 0.0  # ajout
+        self._player_at_midpoint = False  # ajout
+        self.player_dir = (0, 0)  # ajout
+        self.player_next_dir = (0, 0)  # ajout
 
         self.time_elapsed = self.config[1].get("level_max_time")
 

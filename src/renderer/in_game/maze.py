@@ -259,7 +259,7 @@ class Maze():
         new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = new_x
         self.player.center_y = new_y
-        self.player.cell = (x, y)
+        self.player.cell = (x, y)  # ajout: case logique de depart
 
         self.player_list.append(self.player)
 
@@ -336,7 +336,7 @@ class Maze():
         nx, ny = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = nx
         self.player.center_y = ny
-        self.player.cell = (x, y)
+        self.player.cell = (x, y)  # ajout: reinitialise la case
 
         # Ghosts' respawn
         i: int = 0
