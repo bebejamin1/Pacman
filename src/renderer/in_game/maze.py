@@ -155,19 +155,11 @@ class Maze():
                     self._build_ground(screen_x + 1, screen_y - 1)
                     self._build_ground(screen_x + 1, screen_y + 1)
 
-        # "cell" est deja utilise plus haut pour un int (level[x][y]),
-        # mypy voulait un tuple[int, int] ici -> renomme en "pac_cell"
-        # for cell in self.level.pacgums:  # avant
-        #     if random() <= PAC_CHANCE:  # avant
-        #         self._build_pacgum(cell)  # avant
-        for pac_cell in self.level.pacgums:  # apres
-            if random() <= PAC_CHANCE:  # apres
-                self._build_pacgum(pac_cell)  # apres
+        for pac_cell in self.level.pacgums:
+            if random() <= PAC_CHANCE:
+                self._build_pacgum(pac_cell)
 
-    # mypy: appele uniquement avec des int (screen_x/screen_y +-1)
-    # def _build_walls(self, x: float, y: float,  # avant
-    def _build_walls(self, x: int, y: int,  # apres
-                     wall: str, angle: float) -> None:
+    def _build_walls(self, x: int, y: int, wall: str, angle: float) -> None:
         try:
             front_wall = Object(wall, self.scale, angle)
 
@@ -181,8 +173,7 @@ class Maze():
 
         self.wall_list.append(front_wall)
 
-    # def _build_ground(self, x: float, y: float) -> None:  # avant
-    def _build_ground(self, x: int, y: int) -> None:  # apres
+    def _build_ground(self, x: int, y: int) -> None:
         try:
             ground = Object(GROUND, self.scale, 0)
 
@@ -228,7 +219,7 @@ class Maze():
     def _load_entities(self) -> None:
         # Clears the entities lists
         self.player_list.clear()
-        # self.enemies.clear()
+
         self.red_lst.clear()
         self.orange_lst.clear()
         self.cyan_lst.clear()
@@ -273,23 +264,15 @@ class Maze():
 
     def _load_enemies(self) -> None:
         try:
-            red_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png"),
-            ]
-            orange_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png"),
-            ]
-            cyan_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png"),
-            ]
-            pink_anim = [
-                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png"),
-            ]
+                arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/cyan_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}alive/pink_ghost.png")
+                arcade.load_texture(f"{ENEMY_PATH}defeated/dead_ghost.png")
 
         except FileNotFoundError:
             raise ValueError("\033[1;91mError: Assets folder not found\033[0m")
 
-        # on donne cell et plus spawn pour que le fantome se libere de ses chaines  # noqa
         i: int = 0
         for cell in self.level.corners:
             x, y = cell
@@ -297,33 +280,33 @@ class Maze():
 
             if i == 0:
                 self.red = Enemies(f"{ENEMY_PATH}alive/red_ghost.png",
-                                   self.scale / 1.5, red_anim,
-                                   #  self.maze, Personality.CHASER, spawn)  # avant # noqa
-                                   self.maze, Personality.CHASER, cell)  # apres  # noqa
+                                   f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                   self.scale / 1.5, self.maze,
+                                   Personality.CHASER, cell)
                 self.red.center_x = new_x
                 self.red.center_y = new_y
 
             if i == 1:
                 self.orange = Enemies(f"{ENEMY_PATH}alive/orange_ghost.png",
-                                      self.scale / 1.5, orange_anim,
-                                      #  self.maze, Personality.SHY, spawn)  # avant # noqa
-                                      self.maze, Personality.SHY, cell)  # apres  # noqa
+                                      f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                      self.scale / 1.5, self.maze,
+                                      Personality.SHY, cell)
                 self.orange.center_x = new_x
                 self.orange.center_y = new_y
 
             if i == 2:
                 self.cyan = Enemies(f"{ENEMY_PATH}alive/cyan_ghost.png",
-                                    self.scale / 1.5, cyan_anim,
-                                    #  self.maze, Personality.RANDOM, spawn)  # avant # noqa
-                                    self.maze, Personality.RANDOM, cell)  # apres # noqa
+                                    f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                    self.scale / 1.5, self.maze,
+                                    Personality.RANDOM, cell)
                 self.cyan.center_x = new_x
                 self.cyan.center_y = new_y
 
             if i == 3:
                 self.pink = Enemies(f"{ENEMY_PATH}alive/pink_ghost.png",
-                                    self.scale / 1.5, pink_anim,
-                                    #  self.maze, Personality.AMBUSHER, spawn)  # avant # noqa
-                                    self.maze, Personality.AMBUSHER, cell)  # apres # noqa
+                                    f"{ENEMY_PATH}defeated/dead_ghost.png",
+                                    self.scale / 1.5, self.maze,
+                                    Personality.AMBUSHER, cell)
                 self.pink.center_x = new_x
                 self.pink.center_y = new_y
 
@@ -395,13 +378,10 @@ class Maze():
 
         return (nx, ny)
 
-    # les parenthese etait mal placer du coup le calcul etait un peu casser
     def convert_cell_coords(self, screen_x: float, screen_y: float) -> Cell:
 
-        # nx = round(screen_x - (self.width / 2 - self.offset_x)
-        #            / self.size)  # avant  # noqa
         nx = round((screen_x - (self.width / 2 - self.offset_x))
-                   / self.size)  # apres
+                   / self.size)
 
         ny = round(((self.height - 100 - self.offset_y)
                     - screen_y) / self.size)

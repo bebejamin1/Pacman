@@ -114,7 +114,6 @@ class PauseView(arcade.View):
                 arcade.load_texture(f"{PATH}maze_back.png")
 
             # Loads the music and effect
-            # self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
             # Loads the text
