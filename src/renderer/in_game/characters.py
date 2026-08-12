@@ -1,6 +1,7 @@
 import arcade
 
 from typing import Any
+from pathlib import Path
 from arcade.types import PathOrTexture
 
 from src.engine.algo import Greddy, Personality, Cell, Mode
@@ -46,11 +47,12 @@ class Enemies(arcade.Sprite):
     """
     This class will show the enemy animated sprites.
     """
-    def __init__(self, path: PathOrTexture, chase_texture: PathOrTexture,
+    def __init__(self, path: str | Path, flee_texture: str | Path,
                  scale: float, maze: list[list[int]],
                  personality: Personality, home_corner: Cell) -> None:
         super().__init__(path, scale)
-        self.chase_texture: PathOrTexture = chase_texture
+        self.chase_texture: arcade.Texture = arcade.load_texture(path)
+        self.flee_texture: arcade.Texture = arcade.load_texture(flee_texture)
 
         self.brain: Greddy = Greddy(maze, personality, home_corner)
 
@@ -63,9 +65,9 @@ class Enemies(arcade.Sprite):
 
     def update_sprite(self, flee: bool) -> None:
         if flee:
-            print("is fleeing")
+            self.texture = self.flee_texture
         else:
-            print("is not fleeing")
+            self.texture = self.chase_texture
 
     def next_move(self, player_pos: Cell, player_dir: Cell = (0, 0),
                   mode: Mode = Mode.CHASE) -> Cell:

@@ -21,14 +21,6 @@ SUPER_PAC = f"{PATH_PAC}super_pacgum.png"
 WALL = f"{PATH}wall.png"
 GROUND = f"{PATH}ground.png"
 
-WALL_EDGE = f"{PATH}wall_w_edge.png"
-SIDE_WALL = f"{PATH}side_wall.png"
-
-TOP_CORNER = f"{PATH}top_corner.png"
-BOT_CORNER = f"{PATH}bot_corner.png"
-IN_CORNER = f"{PATH}corner_wall.png"
-DEAD_END = f"{PATH}dead_end.png"
-
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.6
 PAC_CHANCE = 0.95
