@@ -127,7 +127,8 @@ This file is presented like this:
     {
       "player_name": "zorb",
       "player_score": 8400
-    },
+    }
+  ]
 }
 ```
 It contains the name of the person and their score and is ordered from highest to lowest score.
