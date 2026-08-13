@@ -7,7 +7,7 @@ from arcade.types import PathOrTexture
 from src.engine.algo import Greddy, Personality, Cell, Mode
 
 # ----| CONSTANTS |---- #
-ANIM_SPEED = 5
+ANIM_SPEED = 10
 HIT_BOX_HALF_WIDTH = 45.0  # ne pas mettre 50 sinon il traverse
 HIT_BOX_HALF_HEIGHT = 45.0
 # --------------------- #
@@ -36,7 +36,7 @@ class Player(arcade.Sprite):
                          *args: Any, **kwargs: Any) -> None:
         self.timer += delta_time
 
-        if self.timer > (1 / ANIM_SPEED):
+        if (self.timer > (1 / ANIM_SPEED)):
             self.curr_texture = (self.curr_texture + 1) % len(self.animation)
             self.texture = self.animation[self.curr_texture]
 

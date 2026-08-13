@@ -5,6 +5,10 @@
       "player_score": 23280
     },
     {
+      "player_name": "mince",
+      "player_score": 10670
+    },
+    {
       "player_name": "zorb",
       "player_score": 8400
     },
@@ -35,10 +39,6 @@
     {
       "player_name": "mochy",
       "player_score": 1210
-    },
-    {
-      "player_name": "cesar44",
-      "player_score": 1040
     }
   ]
 }

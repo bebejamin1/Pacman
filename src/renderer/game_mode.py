@@ -25,11 +25,11 @@ SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.65
 
 GHOST_SPEED = 0.7
-PLAYER_SPEED = 0.45  # ajout: temps(s) refresh case du joueur
+PLAYER_SPEED = 0.7
 FRIGHT_TIME = 10.0
 GHOST_RESPAWN_TIME = 7.0
 
-# ajout: associe une direction (dx, dy) au bit de mur qui la bloque, meme
+# ajout associe une direction (dx, dy) au bit de mur qui la bloque
 DIRECTION_WALL: dict[Cell, int] = {(dx, dy): wall for dx, dy, wall in MOVES}
 # --------------------- #
 
@@ -67,6 +67,16 @@ class GameView(arcade.View):
         self.player_dir: Cell = (0, 0)
         self.player_next_dir: Cell = (0, 0)
 
+        self._prev_player_cell: Cell = (0, 0)  # ajout
+        self._prev_ghost_cell: dict[Enemies, Cell] = {}  # ajout
+        self._ghost_settled_cell: dict[Enemies, Cell] = {}  # ajout
+
+        # ajout: points de depart/arrivee pour interpoler le rendu en douceur
+        self._player_from: tuple[float, float] = (0.0, 0.0)  # ajout
+        self._player_to: tuple[float, float] = (0.0, 0.0)  # ajout
+        self._ghost_from: dict[Enemies, tuple[float, float]] = {}  # ajout
+        self._ghost_to: dict[Enemies, tuple[float, float]] = {}  # ajout
+
         self.level_text: arcade.Text
         self.timer_text: arcade.Text
         self.life_text: arcade.Text
@@ -92,6 +102,8 @@ class GameView(arcade.View):
         self.orange: Enemies = self.maze.orange
         self.cyan: Enemies = self.maze.cyan
         self.pink: Enemies = self.maze.pink
+
+        self._reset_collision_tracking()  # ajout
 
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
@@ -212,14 +224,24 @@ class GameView(arcade.View):
                 self._flee_timer = FRIGHT_TIME
 
         # Checks the collisions with other entities
-        red_hit = arcade.check_for_collision_with_list(self.player,
-                                                       self.maze.red_lst)
-        orange_hit = arcade.check_for_collision_with_list(self.player,
-                                                          self.maze.orange_lst)
-        cyan_hit = arcade.check_for_collision_with_list(self.player,
-                                                        self.maze.cyan_lst)
-        pink_hit = arcade.check_for_collision_with_list(self.player,
-                                                        self.maze.pink_lst)
+        red_hit = self._ghost_collision(  # modif
+            self.red, bool(arcade.check_for_collision_with_list(  # modif
+                self.player, self.maze.red_lst)))  # modif
+        orange_hit = self._ghost_collision(  # modif
+            self.orange, bool(arcade.check_for_collision_with_list(  # modif
+                self.player, self.maze.orange_lst)))  # modif
+        cyan_hit = self._ghost_collision(  # modif
+            self.cyan, bool(arcade.check_for_collision_with_list(  # modif
+                self.player, self.maze.cyan_lst)))  # modif
+        pink_hit = self._ghost_collision(  # modif
+            self.pink, bool(arcade.check_for_collision_with_list(  # modif
+                self.player, self.maze.pink_lst)))  # modif
+
+        # ajout: memorise la case arriver pour anim
+        self._prev_player_cell = self.player.cell  # modif
+        for ghost in (self.red, self.orange, self.cyan, self.pink):  # ajout
+            self._prev_ghost_cell[ghost] = self._ghost_settled_cell.get(  # modif  # noqa
+                ghost, ghost.cell)  # modif
 
         if red_hit or orange_hit or cyan_hit or pink_hit:
             if self.flee is True:
@@ -250,6 +272,7 @@ class GameView(arcade.View):
                     self.player_next_dir = (0, 0)
                     self._player_at_midpoint = False
                     self.time_elapsed = self.config[1].get("level_max_time")
+                    self._reset_collision_tracking()  # ajout
 
         # Updates the HUD
         self.life_text.text = f"x{self.life}"
@@ -280,17 +303,16 @@ class GameView(arcade.View):
 
         # ajout: evite de sauter 2 case
         half_step = step / 2
-        if self._ghost_clock < half_step:
-            return
-
-        player_cell = self.maze.convert_cell_coords(self.player.center_x,
-                                                    self.player.center_y)
-        player_dir = self._player_direction()
 
         # ajout: meme chose evite de sauter 2 case mais pour les 4 fantomes
         while self._ghost_clock >= half_step:
             self._ghost_clock -= half_step
             self._ghost_at_midpoint = not self._ghost_at_midpoint
+
+            # modif: calcule seulement quand un demi-pas a vraiment lieu
+            player_cell = self.maze.convert_cell_coords(  # modif
+                self.player.center_x, self.player.center_y)  # modif
+            player_dir = self._player_direction()  # modif
 
             for ghost in (self.red, self.orange, self.cyan, self.pink):
                 if self._ghost_at_midpoint:
@@ -305,14 +327,25 @@ class GameView(arcade.View):
                     # ajout: demi pas entier termine le trajet
                     new_x, new_y = self.maze.convert_screen_coords(
                         (ghost.cell[0] * 2, ghost.cell[1] * 2))
+                    # ajout: pour debug affichage fantome
+                    self._ghost_settled_cell[ghost] = ghost.cell  # ajout
 
-                ghost.center_x = new_x
-                ghost.center_y = new_y
+                # ajout: ne saute plus directement, glissement fluide  # noqa
+                self._ghost_from[ghost] = self._ghost_to[ghost]  # ajout
+                self._ghost_to[ghost] = (new_x, new_y)  # ajout
 
-                # Hides the eaten ghosts outside the maze
-                if ghost.eaten:
-                    ghost.center_x = -1000
-                    ghost.center_y = -1000
+        # ajout: anim fantome
+        t = min(self._ghost_clock / half_step, 1.0)  # ajout
+        for ghost in (self.red, self.orange, self.cyan, self.pink):  # ajout
+            from_x, from_y = self._ghost_from[ghost]  # ajout
+            to_x, to_y = self._ghost_to[ghost]  # ajout
+            ghost.center_x = from_x + (to_x - from_x) * t  # ajout
+            ghost.center_y = from_y + (to_y - from_y) * t  # ajout
+
+            # Hides the eaten ghosts outside the maze
+            if ghost.eaten:
+                ghost.center_x = -1000
+                ghost.center_y = -1000
 
     def _eat_ghost(self, ghost: Enemies) -> None:
         # Starts the cooldown
@@ -336,6 +369,37 @@ class GameView(arcade.View):
         ghost.center_y = ny
         ghost.cell = ghost.spawn
         ghost.brain.reset()
+
+    # ajout: memorise les case pour ne pas rater des collision
+    def _reset_collision_tracking(self) -> None:  # ajout
+        self._ghost_settled_cell = {  # ajout
+            ghost: ghost.cell  # ajout
+            for ghost in (self.red, self.orange, self.cyan, self.pink)  # ajout
+        }  # ajout
+        self._prev_player_cell = self.player.cell  # ajout
+        self._prev_ghost_cell = dict(self._ghost_settled_cell)  # ajout
+
+        # ajout: anim
+        self._player_from = (self.player.center_x, self.player.center_y)  # ajout  # noqa
+        self._player_to = self._player_from  # ajout
+        self._ghost_from = {  # ajout
+            ghost: (ghost.center_x, ghost.center_y)  # ajout
+            for ghost in (self.red, self.orange, self.cyan, self.pink)  # ajout
+        }  # ajout
+        self._ghost_to = dict(self._ghost_from)  # ajout
+
+    # ajout: detecte une collision
+    def _ghost_collision(self, ghost: Enemies, pixel_hit: bool) -> bool:  # ajout  # noqa
+        if ghost.eaten:  # ajout
+            return False  # ajout
+
+        player_cell = self.player.cell  # modif
+        ghost_cell = self._ghost_settled_cell.get(ghost, ghost.cell)  # modif
+
+        swapped = (player_cell == self._prev_ghost_cell.get(ghost)  # ajout
+                   and ghost_cell == self._prev_player_cell)  # ajout
+
+        return pixel_hit or player_cell == ghost_cell or swapped  # ajout
 
     # ajout: direction du joeur
     def _player_direction(self) -> Cell:
@@ -375,6 +439,8 @@ class GameView(arcade.View):
                 if (direction == (0, 0)
                         or not self._can_step(self.player.cell, direction)):
                     self._player_at_midpoint = False
+                    # ajout: pour eviter rollback contact avec mur
+                    self._player_from = self._player_to  # ajout
                     continue
 
                 self.player_dir = direction
@@ -390,12 +456,36 @@ class GameView(arcade.View):
             else:
                 x, y = self.player.cell
                 dx, dy = self.player_dir
-                self.player.cell = (x + dx, y + dy)
+
+                # ajout: pour changer de direction sans trop de delai
+                if (self.player_next_dir == (-dx, -dy)  # ajout
+                        and self._can_step(self.player.cell,  # ajout
+                                           self.player_next_dir)):  # ajout
+                    self.player_dir = self.player_next_dir  # ajout
+                    dx, dy = self.player_dir  # ajout
+
+                    if dx > 0:  # ajout
+                        self.player.scale_x = 0.6 * CHARACTER_SIZE  # ajout
+                    elif dx < 0:  # ajout
+                        self.player.scale_x = -0.6 * CHARACTER_SIZE  # ajout
+                else:
+                    self.player.cell = (x + dx, y + dy)  # modif
+
                 new_x, new_y = self.maze.convert_screen_coords(
                     (self.player.cell[0] * 2, self.player.cell[1] * 2))
 
-            self.player.center_x = new_x
-            self.player.center_y = new_y
+            # ajout: anim
+            self._player_from = self._player_to  # ajout
+            self._player_to = (new_x, new_y)  # ajout
+
+        # ajout: deplacement flui vers la prochaine case
+        t = min(self._player_clock / half_step, 1.0)  # ajout
+        self.player.center_x = (self._player_from[0]  # ajout
+                                + (self._player_to[0]  # ajout
+                                   - self._player_from[0]) * t)  # ajout
+        self.player.center_y = (self._player_from[1]  # ajout
+                                + (self._player_to[1]  # ajout
+                                   - self._player_from[1]) * t)  # ajout
 
     # ajout: change de direction dans le talbeau grace aux coordonnee
     def on_key_press(self, symbol: int, modifiers: int) -> None:
@@ -493,6 +583,7 @@ class GameView(arcade.View):
         self._player_at_midpoint = False  # ajout
         self.player_dir = (0, 0)  # ajout
         self.player_next_dir = (0, 0)  # ajout
+        self._reset_collision_tracking()  # ajout
 
         self.time_elapsed = self.config[1].get("level_max_time")
 
