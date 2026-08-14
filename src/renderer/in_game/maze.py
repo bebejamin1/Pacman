@@ -23,7 +23,6 @@ GROUND = f"{PATH}ground.png"
 
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.6
-PAC_CHANCE = 0.95
 # --------------------- #
 
 
@@ -34,6 +33,8 @@ class Maze():
         self.maze: list[list[int]] = maze
         self.width: float = width
         self.height: float = height
+
+        self.pac_chance = 0.5  # pas moins de 0.5
 
         self.level: Level = Level(self.maze, lvl_nb)
         self.game_levels: list[dict[str, Any]] = self.config["level"]
@@ -132,6 +133,19 @@ class Maze():
                           screen_y == (self.lvl_height * 2 - 2)):
                         self._build_super_pacgum((screen_x, screen_y))
 
+                    # Places pacgums in the corridor tiles that link this
+                    # cell to its east/south neighbour (open passage only,
+                    # ie no wall bit set on that side)
+                    if (not (cell & 2) and y + 1 < self.lvl_width
+                            and level[x][y + 1] != 15):
+                        if random() <= self.pac_chance:
+                            self._build_pacgum((screen_x + 1, screen_y))
+
+                    if (not (cell & 4) and x + 1 < self.lvl_height
+                            and level[x + 1][y] != 15):
+                        if random() <= self.pac_chance:
+                            self._build_pacgum((screen_x, screen_y + 1))
+
                 # Places the ground
                 self._build_ground(screen_x, screen_y)
                 self._build_ground(screen_x, screen_y - 1)
@@ -147,9 +161,13 @@ class Maze():
                     self._build_ground(screen_x + 1, screen_y - 1)
                     self._build_ground(screen_x + 1, screen_y + 1)
 
+        total_size = self.lvl_width * self.lvl_height
+        self.pac_chance -= total_size / 1000
+
         for pac_cell in self.level.pacgums:
-            if random() <= PAC_CHANCE:
-                self._build_pacgum(pac_cell)
+            if random() <= self.pac_chance:
+                x, y = pac_cell
+                self._build_pacgum((x * 2, y * 2))
 
     def _build_walls(self, x: int, y: int, wall: str, angle: float) -> None:
         try:
@@ -187,8 +205,7 @@ class Maze():
             raise ValueError("\033[1;91mError: wall asset not"
                              " found\033[0m")
 
-        x, y = cell
-        new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
+        new_x, new_y = self.convert_screen_coords(cell)
         pacgum.center_x = new_x
         pacgum.center_y = new_y
 

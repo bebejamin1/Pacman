@@ -452,9 +452,9 @@ class GameView(arcade.View):
                      self.player.cell[1] * 2 + dy))
 
                 if dx > 0:
-                    self.player.scale_x = 0.6 * CHARACTER_SIZE
+                    self.player.scale_x = abs(self.player.scale_x)
                 elif dx < 0:
-                    self.player.scale_x = -0.6 * CHARACTER_SIZE
+                    self.player.scale_x = -abs(self.player.scale_x)
             else:
                 x, y = self.player.cell
                 dx, dy = self.player_dir
@@ -467,9 +467,9 @@ class GameView(arcade.View):
                     dx, dy = self.player_dir  # ajout
 
                     if dx > 0:  # ajout
-                        self.player.scale_x = 0.6 * CHARACTER_SIZE  # ajout
+                        self.player.scale_x = abs(self.player.scale_x)  # ajout
                     elif dx < 0:  # ajout
-                        self.player.scale_x = -0.6 * CHARACTER_SIZE  # ajout
+                        self.player.scale_x = -abs(self.player.scale_x)  # ajout
                 else:
                     self.player.cell = (x + dx, y + dy)  # modif
 
