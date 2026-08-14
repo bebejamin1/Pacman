@@ -4,9 +4,8 @@ import json
 
 from typing import Any
 
-from src.parsing.parse import parse_conf, parse_leaderbord, strip_json_comments
-
-leaderbord_path = "data/leaderboard.json"
+from src.parsing.parse import (parse_conf, parse_leaderbord,
+                               strip_json_comments, default_leaderbord)
 
 
 # *****************************************************************************
@@ -34,18 +33,25 @@ def delete_over_ten(leaderbord: dict[str, Any]) -> dict[str, Any]:
 
 def leaderbord_update(player_name: str, player_score: int) -> dict[str, Any]:
 
-    with open(leaderbord_path, "r") as f:
-        bord = json.loads(strip_json_comments(f.read()))
+    try:
+        with open(leaderbord_path, "r") as f:
+            bord = json.loads(strip_json_comments(f.read()))
 
-    bord["scores"].append({
-        "player_name": player_name,
-        "player_score": player_score
-                          })
+        bord["scores"].append({
+            "player_name": player_name,
+            "player_score": player_score
+                            })
 
-    bord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
-    bord = delete_over_ten(bord)
-    with open(leaderbord_path, "w") as f:
-        json.dump(bord, f, indent=2)
+        bord["scores"].sort(key=lambda p: p["player_score"], reverse=True)
+        bord = delete_over_ten(bord)
+        with open(leaderbord_path, "w") as f:
+            json.dump(bord, f, indent=2)
+
+    except (json.decoder.JSONDecodeError, UnboundLocalError):
+        print("Problem detected in the leaderboard: \nleaderboard reset")
+        with open(leaderbord_path, "w") as f:
+            json.dump(default_leaderbord, leaderbord_path, indent=2)
+        return
 
     return (bord)
 
@@ -79,13 +85,25 @@ def leaderboard_extract(pathfile: str) -> str:
 # *                                                                           *
 
 def parser(conf_path: str) -> dict[str, Any]:
+
+    if (conf_path.startswith("data/") is False):
+        conf_path = f"data/{conf_path}"
+
+    if (conf_path.endswith(".json") is False):
+        print("The configuration file is not a JSON file, it will be "
+              "replaced.")
+        conf_path += ".json"
+
     conf = parse_conf(conf_path)
     leaderbord = parse_leaderbord(conf[0])
 
     global leaderbord_path
+    global config
+    global leaderbord_g
 
     leaderbord_path = conf[0]
-    print(leaderbord)
+    config = conf
+    leaderbord_g = leaderbord
 
     return {
         "conf": conf[1],

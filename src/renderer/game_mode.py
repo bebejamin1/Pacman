@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-from src.parsing.parse import parse_conf
+from src.parsing.parse_main import config
 
 # ----| CONSTANTS |---- #
 PATH = "assets/background/"
@@ -43,7 +43,7 @@ class GameView(arcade.View):
         super().__init__()
         self.window: GameEngine = window
 
-        self.config: list[Any] = parse_conf("data/config.json")
+        self.config: list[Any] = config
         self.seed: int = self.config[1].get("seed")
         self.total_time: int = self.config[1].get("level_max_time")
         self.lvl: list[dict[str, Any]] = self.config[1].get("level")

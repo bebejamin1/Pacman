@@ -1,13 +1,24 @@
 # python3 pac-man.py config.json
 
+from src.parsing.parse_main import parser
+from fire import Fire
+
 import sys
+import os
 
 rs = "\033[0m"
 r = "\033[31m\033[5m\033[1m"
 g = "\033[32m\033[5m\033[1m"
 
 
-def main() -> None:
+def main(conf_path: str) -> None:
+
+    os.system("clear")
+
+    global json_files
+
+    json_files = parser(conf_path)
+
     if (len(sys.argv) != 2):
         print("\n" + f"{r}[ERROR]{rs}: Execute using this structure:" + "\n"
               "python3 pac-man.py config.json" + "\n")
@@ -31,6 +42,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     try:
-        main()
+        Fire(main)
     except (KeyboardInterrupt):
-        print(f"{g}[INFO]{rs}: Quitting Pacman!")
+        print(f"\n{g}[INFO]{rs}: Quitting Pacman!")

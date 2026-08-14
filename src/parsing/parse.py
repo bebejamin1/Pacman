@@ -25,16 +25,14 @@ def strip_json_comments(text: str) -> str:
 
 def parse_conf(path: str) -> list[Any]:
 
-    # os.system("clear")
-
     checks = {  # a voir avec noemie pour les maxs
-        "live": 2000, "pacgum_points": 2000, "super_pacgum_points": 2000,
-        "ghost_points": 2000, "level_max_time": 2000
+        "live": 2147483647, "pacgum_points": 2000, "super_pacgum_points": 4000,
+        "ghost_points": 3000, "level_max_time": 600
              }
-    min_width = 3  # voir avec noemie
-    min_height = 3  # voir avec noemie
-    max_width = 30  # voir avec noemie
-    max_height = 30  # voir avec noemie
+    min_width = 4  # voir avec noemie
+    min_height = 4  # voir avec noemie
+    max_width = 20  # voir avec noemie
+    max_height = 20  # voir avec noemie
 
     try:
         try:
@@ -46,10 +44,14 @@ def parse_conf(path: str) -> list[Any]:
             with open(path, "w") as f:
                 json.dump(default_conf, f, indent=2)
                 conf = default_conf
+
     except Exception:
         print("\n" + f"{r}[ERROR]{rs}: The path to the config file "
               "is not accessible" + "\n")
-        exit()
+        print("config.json has been changed to the default configuration")
+        with open(path, "w") as f:
+            json.dump(default_conf, f, indent=2)
+            conf = default_conf
 
     try:
 
@@ -67,12 +69,16 @@ def parse_conf(path: str) -> list[Any]:
                 or isinstance(conf.get("seed"), bool)
                 or conf["seed"] <= 0):
             raise ValueError("The seed in the JSON conf is not set "
-                             "up correctly.")
+                             "up correctly. Only integer")
 
         for k, v in checks.items():
 
-            if not (conf.get(k)):  # regarder si int
+            if not (conf.get(k)):
                 raise ValueError(f"The JSON config does not contain {k}")
+
+            if (isinstance(conf.get(k), int) is False):
+                raise TypeError(f"{k} is not an int type -> "
+                                f"{type(conf.get(k))}")
 
             if (conf[k] <= 0 or conf[k] > v):
                 raise ValueError(f"{k} must be > 0 and < {v}")
@@ -89,15 +95,16 @@ def parse_conf(path: str) -> list[Any]:
                                  "and its number must be in ascending order.")
 
             if (not lvl.get("width") or not lvl.get("height") or
-                    lvl["width"] <= min_width or lvl["width"] > max_width or
-                    lvl["height"] <= min_height or lvl["height"] > max_height):
+                    lvl["width"] < min_width or lvl["width"] > max_width or
+                    lvl["height"] < min_height or lvl["height"] > max_height):
                 raise ValueError("The maximum values must fall within the "
                                  "following ranges:" + "\n"
-                                 f"width: > 0 and < {max_width}" + "\n"
-                                 f"height: > 0 and < {max_height}")
+                                 f"width: > {min_width} and < {max_width}\n"
+                                 f"height: > {min_height} and < {max_height}")
 
     except (ValueError) as e:
         print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
+        print("config.json has been changed to the default configuration\n")
         with open(path, "w") as f:
             json.dump(default_conf, f, indent=2)
         conf = default_conf
@@ -105,6 +112,7 @@ def parse_conf(path: str) -> list[Any]:
     except TypeError as e:
         print("\n" + f"{r}[ERROR]{rs}:" +
               "The data types do not match" + "\n" + f"{e}")
+        print("config.json has been changed to the default configuration\n")
         with open(path, "w") as f:
             json.dump(default_conf, f, indent=2)
         conf = default_conf
@@ -128,10 +136,20 @@ def parse_leaderbord(path: str) -> dict[str, Any]:
         else:
             with open(path, "r") as f:
                 leaderbord: dict[str, Any] = \
-                  json.loads(strip_json_comments(f.read()))
+                    json.loads(strip_json_comments(f.read()))
 
-    except (FileNotFoundError, json.JSONDecodeError,
-            ValueError, PermissionError):
+    except json.JSONDecodeError:
+        print("\n" + f"{r}[ERROR]{rs}: ", end="")
+        print("The leaderboard was set up incorrectly ")
+        print("leaderboard.json has been replaced with an empty leaderboard\n")
+        with open(path, "w") as f:
+            json.dump(default_leaderbord, f, indent=2)
+            leaderbord = default_leaderbord
+
+    except (FileNotFoundError,
+            ValueError, PermissionError) as e:
+        print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
+        print("leaderboard.json has been replaced with an empty leaderboard\n")
         with open(path, "w") as f:
             json.dump(default_leaderbord, f, indent=2)
         leaderbord = default_leaderbord
@@ -150,11 +168,12 @@ def parse_leaderbord(path: str) -> dict[str, Any]:
                                  "player_score: int")
 
             name = p["player_name"]
-            if (len(name) > 10):
-                error = ("The player's name must be less than "
-                         "10 characters long and consist only of "
-                         "alphanumeric and/or numeric characters, "
-                         "including spaces. --> " + f"{name}")
+            error = ("The player's name must be string less than "
+                     "10 characters long and consist only of "
+                     "alphanumeric and/or numeric characters, "
+                     "including spaces. --> " + f"{name}")
+
+            if (isinstance(name, str) is False or len(name) > 10):
                 raise ValueError(error)
 
             for c in name:
@@ -166,8 +185,9 @@ def parse_leaderbord(path: str) -> dict[str, Any]:
                 raise ValueError("The score must be greater than 0 and must "
                                  "not exceed 2147483647.")
 
-    except ValueError as e:
+    except (ValueError) as e:
         print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
+        print("leaderboard.json has been replaced with an empty leaderboard\n")
         with open(path, "w") as f:
             json.dump(default_leaderbord, f, indent=2)
         leaderbord = default_leaderbord
@@ -215,7 +235,7 @@ default_conf = {
         {
             "name": "Level 5",
             "width": 15,
-            "height": 21
+            "height": 19
         },
         {
             "name": "Level 6",
