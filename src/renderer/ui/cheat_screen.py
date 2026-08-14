@@ -32,9 +32,6 @@ class CheatView(arcade.View):
         self._load()
 
     def on_key_press(self, key: int, _modifiers: int) -> None:
-        if key == arcade.key.ESCAPE:
-            self.window.show_view(self.window.menu_view)
-
         if key == arcade.key.SPACE:
             self.window.show_view(self.window.game_view)
 

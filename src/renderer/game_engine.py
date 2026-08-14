@@ -41,6 +41,9 @@ class GameEngine(arcade.Window):
         # Loads the music and effect
         self.menu_music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
         self.game_music = arcade.load_sound(f"{MUSIC_PATH}music/game.mp3")
+        self.end_music = arcade.load_sound(f"{MUSIC_PATH}music/end.mp3")
+        self.victory = arcade.load_sound(f"{MUSIC_PATH}effect/victory.mp3")
+        self.lose = arcade.load_sound(f"{MUSIC_PATH}effect/lose.mp3")
 
     def set_view(self) -> None:
         self.menu_view = MenuView(self)
@@ -51,9 +54,12 @@ class GameEngine(arcade.Window):
         self.cheat_view = CheatView(self)
 
     def switch_menu(self) -> None:
-        # Goes on the main menu
+        self.play_music(self.end_music, True, False)
         self.play_music(self.game_music, True, False)
+
+        # Goes on the main menu
         self.show_view(self.menu_view)
+
         self.play_music(self.menu_music, True)
 
     def switch_instructions(self) -> None:
@@ -65,13 +71,13 @@ class GameEngine(arcade.Window):
         self.show_view(self.highscore_view)
 
     def switch_game(self, restart: bool) -> None:
-        # Goes on the game
         self.play_music(self.menu_music, True, False)
 
         if restart is True:
             lvl_nb: int = 0
             self.game_view.setup(lvl_nb)
 
+        # Goes on the game
         self.show_view(self.game_view)
         self.play_music(self.game_music, True)
 
@@ -80,9 +86,17 @@ class GameEngine(arcade.Window):
         self.show_view(self.pause_view)
 
     def switch_end(self, win: bool, score: int) -> None:
-        # Goes on the end menu
         self.play_music(self.game_music, True, False)
+
+        if win is True:
+            self.play_music(self.victory, False, True)
+        else:
+            self.play_music(self.lose, False, True)
+
+        # Goes on the end menu
         self.show_view(EndView(self, win, score))
+
+        self.play_music(self.end_music, True)
 
     def switch_cheat(self) -> None:
         # Goes on the cheat menu
