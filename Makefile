@@ -42,7 +42,7 @@ run:
 debug:
 	@clear
 	@echo "$(BLUE)Running the project in debug...$(END)"
-	$(PYTHON) -m pdb src $(JSON_FLAGS)
+	$(PYTHON) -m pdb pac-man.py config.json
 
 
 clean:
@@ -57,8 +57,8 @@ clean:
 lint:
 	@clear
 	@status=0; \
-	$(FLAKE8) src/ || status=$$?; \
-	$(MYPY) src/ $(MYPY_FLAGS) || status=$$?; \
+	$(FLAKE8) $(PYTHON) src/ || status=$$?; \
+	$(MYPY) $(PYTHON) src/ $(MYPY_FLAGS) || status=$$?; \
 	exit $$status
 
 

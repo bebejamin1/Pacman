@@ -43,6 +43,8 @@ class GameView(arcade.View):
         super().__init__()
         self.window: GameEngine = window
 
+        self.player_speed = PLAYER_SPEED
+
         self.config: list[Any] = config
         self.seed: int = self.config[1].get("seed")
         self.total_time: int = self.config[1].get("level_max_time")
@@ -421,7 +423,7 @@ class GameView(arcade.View):
     # ajout: deplacement du joueur
     def _move_player(self, delta_time: float) -> None:
         self._player_clock += delta_time
-        half_step = PLAYER_SPEED / 2
+        half_step = self.player_speed / 2
 
         while self._player_clock >= half_step:
             self._player_clock -= half_step
