@@ -8,8 +8,8 @@ from src.engine.algo import Greddy, Personality, Cell, Mode
 
 # ----| CONSTANTS |---- #
 ANIM_SPEED = 10
-HIT_BOX_HALF_WIDTH = 45.0  # ne pas mettre 50 sinon il traverse
-HIT_BOX_HALF_HEIGHT = 45.0
+HIT_BOX_HALF_WIDTH = 1  # ne pas mettre 50 sinon il traverse
+HIT_BOX_HALF_HEIGHT = 1
 # --------------------- #
 
 

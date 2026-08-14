@@ -25,14 +25,14 @@ def strip_json_comments(text: str) -> str:
 
 def parse_conf(path: str) -> list[Any]:
 
-    checks = {  # a voir avec noemie pour les maxs
+    checks = {
         "live": 2147483647, "pacgum_points": 2000, "super_pacgum_points": 4000,
         "ghost_points": 3000, "level_max_time": 600
              }
-    min_width = 4  # voir avec noemie
-    min_height = 4  # voir avec noemie
-    max_width = 20  # voir avec noemie
-    max_height = 20  # voir avec noemie
+    min_width = 4
+    min_height = 4
+    max_width = 20
+    max_height = 20
 
     try:
         try:

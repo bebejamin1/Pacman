@@ -563,7 +563,7 @@ class GameView(arcade.View):
     def next_level(self, width: int, height: int) -> None:
         self.next_maze: list[list[int]] = self.window.new_maze((width,
                                                                 height),
-                                                               self.seed)
+                                                               0)
 
         self.maze = Maze(self.config[1], self.next_maze,
                          self.lvl_nb, self.width, self.height)

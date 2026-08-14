@@ -87,12 +87,14 @@ class CheatView(arcade.View):
 
                 if self.cheats.speed_boost is False:
                     self.cheats.speed_boost = True
-                    self.game.speed *= 2
+                    self.game.speed_player *= 200
+                    print(self.game.speed_player)
                     print("Speed added")
 
                 else:
                     self.cheats.speed_boost = False
-                    self.game.speed /= 2
+                    self.game.speed_player /= 200
+                    print(self.game.speed_player)
                     print("Speed removed")
 
             if sprite == self.resume:

@@ -4,7 +4,7 @@ import arcade
 
 from typing import Any
 
-from mazegen.mazegenerator.mazegenerator import MazeGenerator
+from mazegenerator import MazeGenerator
 
 from src.engine.game import Game, Rules, Cheats
 
