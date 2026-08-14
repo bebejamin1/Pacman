@@ -27,9 +27,13 @@ class PauseView(arcade.View):
 
     def on_key_press(self, key: int, _modifiers: int) -> None:
         if key == arcade.key.ESCAPE:
+            arcade.play_sound(self.effect)
+            self.window.play_music(self.window.game_music, True, False)
+            self.window.play_music(self.window.menu_music, True)
             self.window.show_view(self.window.menu_view)
 
         if key == arcade.key.SPACE:
+            arcade.play_sound(self.effect)
             self.window.show_view(self.window.game_view)
 
     def on_mouse_press(self, x: float, y: float, button: int,

@@ -236,13 +236,7 @@ class EndView(arcade.View):
             # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}finish.png")
-
-            # Loads the music and effect
-            # if self.win == True:
-            #   self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
-            # else:
-            #   self.music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
-
+            
             # Loads the text
             self._load_text()
 
