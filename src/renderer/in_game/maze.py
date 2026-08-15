@@ -379,13 +379,14 @@ class Maze():
 
             i += 1
 
-    def convert_screen_coords(self, cell: Cell) -> Cell:
+    # modif: ne round() plus les coord
+    def convert_screen_coords(self, cell: Cell) -> tuple[float, float]:
         x, y = cell
 
-        nx = round(x * self.size + (self.width / 2) -
-                   ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
-        ny = round((self.height - 100) - (y * self.size) +
-                   ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
+        nx = (x * self.size + (self.width / 2) -
+              ((self.size * 2 * (x / 2)) / 2) - self.offset_x)
+        ny = ((self.height - 100) - (y * self.size) +
+              ((self.size * 2 * (y / 2)) / 2) - self.offset_y)
 
         return (nx, ny)
 
