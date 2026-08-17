@@ -263,7 +263,58 @@ The task realized during this project for each member is listed below:
 
 A more detailed version of the management can be found in the [**`project_management`**](project_management/) folder at the root of this repository.
 
-## Itch.io Project Page
+## Packaging & Itch.io
+The Linux build is packaged with [PyInstaller](https://pyinstaller.org/), configured through [`pacman.spec`](pacman.spec) at the root of the repository. The steps below are run by hand (on purpose, to keep the process transparent and reproducible during peer review) to go from that spec file to a zip ready for upload.
+
+<details>
+<summary>How to (re)build the package</summary>
+
+1. **Build the executable** from the spec file:
+   ```bash
+   uv run pyinstaller pacman.spec --noconfirm
+   ```
+   This produces `dist/pacman/` (the `pacman` executable plus its bundled libraries in `_internal/`).
+
+2. **Fix a known PyInstaller/arcade quirk** (cosmetic only, the game runs fine without it, but it prints a confusing error otherwise): the `arcade` library's own PyInstaller hook sometimes makes PyInstaller turn its `VERSION` data file into a folder instead of a file.
+   ```bash
+   cd dist/pacman/_internal/arcade
+   mv VERSION/VERSION VERSION.tmp && rmdir VERSION && mv VERSION.tmp VERSION
+   cd -
+   ```
+
+3. **Copy the game assets and default config** next to the executable. The game loads them through plain relative paths (e.g. `assets/background/...`), resolved against the current working directory, so they must sit alongside `pacman`, not inside `_internal/`:
+   ```bash
+   cp -r assets dist/pacman/assets
+   mkdir -p dist/pacman/data
+   cp data/config.json dist/pacman/data/config.json
+   ```
+
+4. **Add minimal in-package instructions** (controls, cheats, configuration), e.g. create `dist/pacman/INSTRUCTIONS.txt` with:
+   ```
+   HOW TO RUN
+       ./pacman data/config.json
+
+   CONTROLS
+       Move          Arrow keys or WASD
+       Pause/Resume  SPACE
+       Cheat menu    C (while playing)
+       Back / Quit   ESCAPE
+
+   CONFIGURATION
+       Edit data/config.json (JSON, "#" comments allowed), or pass another file:
+           ./pacman path/to/other_config.json
+       Highscores (top 10) are saved to data/leaderboard.json.
+   ```
+
+5. **Zip it up** for upload:
+   ```bash
+   cd dist && zip -r pacman-linux.zip pacman
+   ```
+
+6. **Upload `dist/pacman-linux.zip` to itch.io**: new project → *Kind of project*: Downloadable → drop the zip in *Uploads* → tag it **Linux** → set visibility to **Restricted (unlisted)** or **Private** → save.
+
+</details>
+
 The game's page can be found [**here**]() (no link yet).
 
 ## Resources
