@@ -57,16 +57,16 @@ clean:
 lint:
 	@clear
 	@status=0; \
-	$(FLAKE8) src/ || status=$$?; \
-	$(MYPY) src/ $(MYPY_FLAGS) || status=$$?; \
+	$(FLAKE8) . || status=$$?; \
+	$(MYPY) . $(MYPY_FLAGS) || status=$$?; \
 	exit $$status
 
 
 lint-strict:
 	@clear
 	@status=0; \
-	$(FLAKE8) src/ || status=$$?; \
-	$(MYPY) src/ $(MYPY_FLAGS) --strict || status=$$?; \
+	$(FLAKE8) . || status=$$?; \
+	$(MYPY) . $(MYPY_FLAGS) --strict || status=$$?; \
 	exit $$status
 
 

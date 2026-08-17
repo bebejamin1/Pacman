@@ -45,6 +45,8 @@ Each of these parameters is used to define the aspects of the game.<br>
 The `highscore_filename` is the file inside which the highest players' score are kept. The `level` defines one or more level dimensions (the width and the height). `lives` defines the players' number of lives, the `pacgum` is (percentage or number of pacgum) available on the level.<br>
 For `points_per_pacgum`, `points_per_super_pacgum` and `points_per_ghost` define the points received for eating the pacgums, the super pacgums and the ghosts respectively. The `seed` defines a specific maze generation. Finally, the `level_max_time` defines the maximum time to complete the level.
 
+The config file passed on the command line is always resolved under the `data/` folder (a bare filename is prefixed with `data/` automatically), which keeps every configuration and leaderboard file in one place. If the file does not exist yet, is not valid JSON, or is missing/invalid keys, it is regenerated with the default configuration below, a message is printed to explain what happened, and the game still starts — so the player is never blocked by a faulty config file.
+
 The default configuration is given in the collapsible section below.
 <details>
 <summary>Default configuration</summary>
@@ -57,7 +59,7 @@ The default configuration is given in the collapsible section below.
   "super_pacgum_points": 50,
   "ghost_points": 200,
   "seed": 42,
-  "level_max_time": 150,
+  "level_max_time": 90,
   "level": [
     {
       "name": "Level 1",
@@ -76,13 +78,13 @@ The default configuration is given in the collapsible section below.
     },
     {
       "name": "Level 4",
-      "width": 15,
+      "width": 10,
       "height": 20
     },
     {
       "name": "Level 5",
       "width": 15,
-      "height": 12
+      "height": 19
     },
     {
       "name": "Level 6",
@@ -263,7 +265,7 @@ The task realized during this project for each member is listed below:
   - Assets' creation
   - README
 
-A more detailed version of the management can be found in the **`project_management`** folder at the root of this repository.
+A more detailed version of the management can be found in the [**`project_management`**](project_management/) folder at the root of this repository.
 
 ## Itch.io Project Page
 The game's page can be found [**here**]() (no link yet).
@@ -281,4 +283,5 @@ The game's page can be found [**here**]() (no link yet).
 - [sousampere](https://github.com/sousampere/42_pacman)
 
 ### AI Usage:
-To find a few good classes and methods names, make a few docstrings and solve make lint-strict issues.
+AI (Claude Code) was used to find a few good classes and methods names and to help solve `make lint-strict` issues during development.<br>
+It was also used, in a later pass, to write every missing docstring in `src/engine/` and `src/renderer/` (Google style, PEP 257: purpose, `Args`, `Returns`/`Raises`), to remove leftover inline development comments from those same modules, and to align the `flake8`/`mypy` lint scope with the subject (Makefile `lint`/`lint-strict` rules, `.flake8` and `pyproject.toml` excludes) so `flake8 .` and `mypy .` run cleanly from the project root. `src/parsing/` was intentionally left untouched in that pass, as it is still being iterated on manually. Every change was reviewed and re-checked with `make lint-strict` before being kept.

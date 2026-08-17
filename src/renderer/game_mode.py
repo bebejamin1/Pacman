@@ -1,12 +1,10 @@
-
-
 import os
 import arcade
 
 from typing import Any
 
 from src.engine.game import Cheats
-from src.engine.algo import Cell, Mode, MOVES  # ajout: MOVES
+from src.engine.algo import Cell, Mode, MOVES
 from src.renderer.in_game.maze import Maze
 from src.renderer.in_game.characters import Player, Enemies
 
@@ -16,7 +14,6 @@ if TYPE_CHECKING:
 
 from src.parsing.parse_main import config
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MAZE_PATH = "assets/maze/"
 MUSIC_PATH = "assets/sound/"
@@ -29,17 +26,18 @@ PLAYER_SPEED = 0.7
 FRIGHT_TIME = 10.0
 GHOST_RESPAWN_TIME = 7.0
 
-# ajout associe une direction (dx, dy) au bit de mur qui la bloque
 DIRECTION_WALL: dict[Cell, int] = {(dx, dy): wall for dx, dy, wall in MOVES}
-# --------------------- #
 
 
 class GameView(arcade.View):
-    """
-    This class will show the game and make the user
-    able to control the character's movement.
-    """
+    """Drives the actual gameplay: movement, collisions, HUD and timers."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Initialize movement, timing and HUD state for a new game view.
+
+        Args:
+            window: Owning game window.
+        """
         super().__init__()
         self.window: GameEngine = window
 
@@ -57,27 +55,24 @@ class GameView(arcade.View):
         self.flee: bool = False
         self._flee_timer: float = FRIGHT_TIME
         self._ghost_clock = 0.0
-        # ajout: alterne entre les 2 demipas du deplacement des fantomes
         self._ghost_at_midpoint: bool = False
 
         self.cheats: Cheats = self.window.cheats
         self.score: Any = 0
 
-        # ajout: etat du deplacement case par case du joueur
         self._player_clock: float = 0.0
         self._player_at_midpoint: bool = False
         self.player_dir: Cell = (0, 0)
         self.player_next_dir: Cell = (0, 0)
 
-        self._prev_player_cell: Cell = (0, 0)  # ajout
-        self._prev_ghost_cell: dict[Enemies, Cell] = {}  # ajout
-        self._ghost_settled_cell: dict[Enemies, Cell] = {}  # ajout
+        self._prev_player_cell: Cell = (0, 0)
+        self._prev_ghost_cell: dict[Enemies, Cell] = {}
+        self._ghost_settled_cell: dict[Enemies, Cell] = {}
 
-        # ajout: points de depart/arrivee pour interpoler le rendu en douceur
-        self._player_from: tuple[float, float] = (0.0, 0.0)  # ajout
-        self._player_to: tuple[float, float] = (0.0, 0.0)  # ajout
-        self._ghost_from: dict[Enemies, tuple[float, float]] = {}  # ajout
-        self._ghost_to: dict[Enemies, tuple[float, float]] = {}  # ajout
+        self._player_from: tuple[float, float] = (0.0, 0.0)
+        self._player_to: tuple[float, float] = (0.0, 0.0)
+        self._ghost_from: dict[Enemies, tuple[float, float]] = {}
+        self._ghost_to: dict[Enemies, tuple[float, float]] = {}
 
         self.level_text: arcade.Text
         self.timer_text: arcade.Text
@@ -86,6 +81,12 @@ class GameView(arcade.View):
         self.text: arcade.Text
 
     def setup(self, lvl_nb: int) -> None:
+        """Load a level, its sprites and its HUD, then bind entities.
+
+        Args:
+            lvl_nb: Index of the level to load. ``0`` generates the
+                first maze; any other value loads the next one.
+        """
         self.lvl_nb = lvl_nb
         if self.lvl_nb == 0:
             self._maze_generation()
@@ -105,7 +106,7 @@ class GameView(arcade.View):
         self.cyan: Enemies = self.maze.cyan
         self.pink: Enemies = self.maze.pink
 
-        self._reset_collision_tracking()  # ajout
+        self._reset_collision_tracking()
 
         self.physic_engine = arcade.PhysicsEngineSimple(self.player,
                                                         self.maze.wall_list)
@@ -127,19 +128,18 @@ class GameView(arcade.View):
                                                             )
 
     def on_draw(self) -> None:
+        """Draw the maze, entities, collectibles and HUD."""
         self.clear()
 
         arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
-        # Draws the maze and its collectibles
         self.maze.ground_list.draw()
         self.maze.wall_list.draw()
         self.maze.pacgum_list.draw()
         self.maze.super_pac.draw()
 
-        # Draws entities
         self.maze.player_list.draw()
 
         self.maze.red_lst.draw()
@@ -147,7 +147,6 @@ class GameView(arcade.View):
         self.maze.cyan_lst.draw()
         self.maze.pink_lst.draw()
 
-        # Draws the HUD
         self.level_text.draw()
         self.timer_text.draw()
         self.life_text.draw()
@@ -155,7 +154,11 @@ class GameView(arcade.View):
         self.text.draw()
 
     def on_update(self, delta_time: float) -> None:
-        # Updates entities
+        """Advance one game tick: movement, collisions, timers and HUD.
+
+        Args:
+            delta_time: Elapsed time, in seconds, since the last tick.
+        """
         self.maze.player_list.update()
 
         self.maze.red_lst.update()
@@ -163,14 +166,12 @@ class GameView(arcade.View):
         self.maze.cyan_lst.update()
         self.maze.pink_lst.update()
 
-        # Makes the physics of the game
         self.physic_engine.update()
         self.red_physic_engine.update()
         self.orange_physic_engine.update()
         self.cyan_physic_engine.update()
         self.pink_physic_engine.update()
 
-        # Entities animations
         self.player.update_animation(delta_time * 2, None, None)
 
         self.red.update_animation(delta_time, None, None)
@@ -181,7 +182,6 @@ class GameView(arcade.View):
         self._move_player(delta_time)
         self._move_ghosts(delta_time)
 
-        # Count down for the ghosts fleeing
         if self.flee:
             self._flee_timer -= delta_time
             if self._flee_timer <= 0:
@@ -195,7 +195,6 @@ class GameView(arcade.View):
 
         self._tick_ghost_respawn(delta_time)
 
-        # Checks the collisions with collectibles
         pac_hit = arcade.check_for_collision_with_list(self.player,
                                                        self.maze.pacgum_list)
         if pac_hit:
@@ -225,32 +224,29 @@ class GameView(arcade.View):
                 self.flee = True
                 self._flee_timer = FRIGHT_TIME
 
-        # Checks the collisions with other entities
-        red_hit = self._ghost_collision(  # modif
-            self.red, bool(arcade.check_for_collision_with_list(  # modif
-                self.player, self.maze.red_lst)))  # modif
-        orange_hit = self._ghost_collision(  # modif
-            self.orange, bool(arcade.check_for_collision_with_list(  # modif
-                self.player, self.maze.orange_lst)))  # modif
-        cyan_hit = self._ghost_collision(  # modif
-            self.cyan, bool(arcade.check_for_collision_with_list(  # modif
-                self.player, self.maze.cyan_lst)))  # modif
-        pink_hit = self._ghost_collision(  # modif
-            self.pink, bool(arcade.check_for_collision_with_list(  # modif
-                self.player, self.maze.pink_lst)))  # modif
+        red_hit = self._ghost_collision(
+            self.red, bool(arcade.check_for_collision_with_list(
+                self.player, self.maze.red_lst)))
+        orange_hit = self._ghost_collision(
+            self.orange, bool(arcade.check_for_collision_with_list(
+                self.player, self.maze.orange_lst)))
+        cyan_hit = self._ghost_collision(
+            self.cyan, bool(arcade.check_for_collision_with_list(
+                self.player, self.maze.cyan_lst)))
+        pink_hit = self._ghost_collision(
+            self.pink, bool(arcade.check_for_collision_with_list(
+                self.player, self.maze.pink_lst)))
 
-        # ajout: memorise la case arriver pour anim
-        self._prev_player_cell = self.player.cell  # modif
-        for ghost in (self.red, self.orange, self.cyan, self.pink):  # ajout
-            self._prev_ghost_cell[ghost] = self._ghost_settled_cell.get(  # modif  # noqa
-                ghost, ghost.cell)  # modif
+        self._prev_player_cell = self.player.cell
+        for ghost in (self.red, self.orange, self.cyan, self.pink):
+            self._prev_ghost_cell[ghost] = self._ghost_settled_cell.get(
+                ghost, ghost.cell)
 
         if red_hit or orange_hit or cyan_hit or pink_hit:
             if self.flee is True:
                 self.score += self.rules.get("ghost_points")
                 self.score_text.text = self.score
 
-                # Eaten ghost goes back to its spawn
                 if red_hit:
                     self._eat_ghost(self.red)
                 if orange_hit:
@@ -269,19 +265,16 @@ class GameView(arcade.View):
                     self.window.switch_end(False, self.score)
                 else:
                     self.maze._restart_level()
-                    # ajout: reinitialise le deplacement du joueur au respawn
                     self.player_dir = (0, 0)
                     self.player_next_dir = (0, 0)
                     self._player_at_midpoint = False
                     self.time_elapsed = self.config[1].get("level_max_time")
-                    self._reset_collision_tracking()  # ajout
+                    self._reset_collision_tracking()
 
-        # Updates the HUD
         self.life_text.text = f"x{self.life}"
         self.level = self.lvl[self.lvl_nb].get("name")
         self.level_text.text = self.level
 
-        # Updates the countdown
         self.time_elapsed -= delta_time
         minutes = int(self.time_elapsed // 60)
         seconds = int(self.time_elapsed % 60)
@@ -291,6 +284,15 @@ class GameView(arcade.View):
             self.window.switch_end(False, self.score)
 
     def _move_ghosts(self, delta_time: float) -> None:
+        """Advance every ghost's half-step animation and AI decisions.
+
+        Ghosts move in two half-steps per cell: the first half decides
+        and commits to the destination cell, the second half finishes
+        sliding into it, which keeps the on-screen motion smooth.
+
+        Args:
+            delta_time: Elapsed time, in seconds, since the last tick.
+        """
         if self.cheats.freeze_ghosts:
             return
 
@@ -303,22 +305,18 @@ class GameView(arcade.View):
             mode = Mode.CHASE
             step = GHOST_SPEED * 1.0
 
-        # ajout: evite de sauter 2 case
         half_step = step / 2
 
-        # ajout: meme chose evite de sauter 2 case mais pour les 4 fantomes
         while self._ghost_clock >= half_step:
             self._ghost_clock -= half_step
             self._ghost_at_midpoint = not self._ghost_at_midpoint
 
-            # modif: calcule seulement quand un demi-pas a vraiment lieu
-            player_cell = self.maze.convert_cell_coords(  # modif
-                self.player.center_x, self.player.center_y)  # modif
-            player_dir = self._player_direction()  # modif
+            player_cell = self.maze.convert_cell_coords(
+                self.player.center_x, self.player.center_y)
+            player_dir = self._player_direction()
 
             for ghost in (self.red, self.orange, self.cyan, self.pink):
                 if self._ghost_at_midpoint:
-                    # ajout: demi pas decide de quel case il prend
                     old_cell = ghost.cell
                     new_cell = ghost.next_move(player_cell, player_dir, mode)
                     dx = new_cell[0] - old_cell[0]
@@ -326,35 +324,39 @@ class GameView(arcade.View):
                     new_x, new_y = self.maze.convert_screen_coords(
                         (old_cell[0] * 2 + dx, old_cell[1] * 2 + dy))
                 else:
-                    # ajout: demi pas entier termine le trajet
                     new_x, new_y = self.maze.convert_screen_coords(
                         (ghost.cell[0] * 2, ghost.cell[1] * 2))
-                    # ajout: pour debug affichage fantome
-                    self._ghost_settled_cell[ghost] = ghost.cell  # ajout
+                    self._ghost_settled_cell[ghost] = ghost.cell
 
-                # ajout: ne saute plus directement, glissement fluide  # noqa
-                self._ghost_from[ghost] = self._ghost_to[ghost]  # ajout
-                self._ghost_to[ghost] = (new_x, new_y)  # ajout
+                self._ghost_from[ghost] = self._ghost_to[ghost]
+                self._ghost_to[ghost] = (new_x, new_y)
 
-        # ajout: anim fantome
-        t = min(self._ghost_clock / half_step, 1.0)  # ajout
-        for ghost in (self.red, self.orange, self.cyan, self.pink):  # ajout
-            from_x, from_y = self._ghost_from[ghost]  # ajout
-            to_x, to_y = self._ghost_to[ghost]  # ajout
-            ghost.center_x = from_x + (to_x - from_x) * t  # ajout
-            ghost.center_y = from_y + (to_y - from_y) * t  # ajout
+        t = min(self._ghost_clock / half_step, 1.0)
+        for ghost in (self.red, self.orange, self.cyan, self.pink):
+            from_x, from_y = self._ghost_from[ghost]
+            to_x, to_y = self._ghost_to[ghost]
+            ghost.center_x = from_x + (to_x - from_x) * t
+            ghost.center_y = from_y + (to_y - from_y) * t
 
-            # Hides the eaten ghosts outside the maze
             if ghost.eaten:
                 ghost.center_x = -1000
                 ghost.center_y = -1000
 
     def _eat_ghost(self, ghost: Enemies) -> None:
-        # Starts the cooldown
+        """Mark a ghost as eaten and start its respawn cooldown.
+
+        Args:
+            ghost: Ghost that was just eaten.
+        """
         ghost.eaten = True
         ghost.respawn_timer = GHOST_RESPAWN_TIME
 
     def _tick_ghost_respawn(self, delta_time: float) -> None:
+        """Count down eaten ghosts' respawn timers and respawn them.
+
+        Args:
+            delta_time: Elapsed time, in seconds, since the last tick.
+        """
         for ghost in (self.red, self.orange, self.cyan, self.pink):
             if not ghost.eaten:
                 continue
@@ -364,6 +366,11 @@ class GameView(arcade.View):
                 self._respawn_ghost(ghost)
 
     def _respawn_ghost(self, ghost: Enemies) -> None:
+        """Move a ghost back to its home corner and reset its brain.
+
+        Args:
+            ghost: Ghost to respawn.
+        """
         ghost.eaten = False
         x, y = ghost.spawn
         nx, ny = self.maze.convert_screen_coords((x * 2, y * 2))
@@ -372,43 +379,63 @@ class GameView(arcade.View):
         ghost.cell = ghost.spawn
         ghost.brain.reset()
 
-    # ajout: memorise les case pour ne pas rater des collision
-    def _reset_collision_tracking(self) -> None:  # ajout
-        self._ghost_settled_cell = {  # ajout
-            ghost: ghost.cell  # ajout
-            for ghost in (self.red, self.orange, self.cyan, self.pink)  # ajout
-        }  # ajout
-        self._prev_player_cell = self.player.cell  # ajout
-        self._prev_ghost_cell = dict(self._ghost_settled_cell)  # ajout
+    def _reset_collision_tracking(self) -> None:
+        """Reset the cell/position history used for collision detection."""
+        self._ghost_settled_cell = {
+            ghost: ghost.cell
+            for ghost in (self.red, self.orange, self.cyan, self.pink)
+        }
+        self._prev_player_cell = self.player.cell
+        self._prev_ghost_cell = dict(self._ghost_settled_cell)
 
-        # ajout: anim
-        self._player_from = (self.player.center_x, self.player.center_y)  # ajout  # noqa
-        self._player_to = self._player_from  # ajout
-        self._ghost_from = {  # ajout
-            ghost: (ghost.center_x, ghost.center_y)  # ajout
-            for ghost in (self.red, self.orange, self.cyan, self.pink)  # ajout
-        }  # ajout
-        self._ghost_to = dict(self._ghost_from)  # ajout
+        self._player_from = (self.player.center_x, self.player.center_y)
+        self._player_to = self._player_from
+        self._ghost_from = {
+            ghost: (ghost.center_x, ghost.center_y)
+            for ghost in (self.red, self.orange, self.cyan, self.pink)
+        }
+        self._ghost_to = dict(self._ghost_from)
 
-    # ajout: detecte une collision
-    def _ghost_collision(self, ghost: Enemies, pixel_hit: bool) -> bool:  # ajout  # noqa
-        if ghost.eaten:  # ajout
-            return False  # ajout
+    def _ghost_collision(self, ghost: Enemies, pixel_hit: bool) -> bool:
+        """Detect a player/ghost collision, including a same-frame swap.
 
-        player_cell = self.player.cell  # modif
-        ghost_cell = self._ghost_settled_cell.get(ghost, ghost.cell)  # modif
+        Combines the sprite-based pixel collision with a logical-cell
+        check, so a player and a ghost swapping cells within the same
+        tick are still detected as a collision.
 
-        swapped = (player_cell == self._prev_ghost_cell.get(ghost)  # ajout
-                   and ghost_cell == self._prev_player_cell)  # ajout
+        Args:
+            ghost: Ghost to check against the player.
+            pixel_hit: Whether Arcade's sprite collision already fired.
 
-        return pixel_hit or player_cell == ghost_cell or swapped  # ajout
+        Returns:
+            True if the player and the ghost collided this tick.
+        """
+        if ghost.eaten:
+            return False
 
-    # ajout: direction du joeur
+        player_cell = self.player.cell
+        ghost_cell = self._ghost_settled_cell.get(ghost, ghost.cell)
+
+        swapped = (player_cell == self._prev_ghost_cell.get(ghost)
+                   and ghost_cell == self._prev_player_cell)
+
+        return pixel_hit or player_cell == ghost_cell or swapped
+
     def _player_direction(self) -> Cell:
+        """Return the player's current movement direction."""
         return self.player_dir
 
-    # ajout: verirfie si le joueur peu avancer
     def _can_step(self, cell: Cell, direction: Cell) -> bool:
+        """Check whether the player can move from ``cell`` in ``direction``.
+
+        Args:
+            cell: Player's current logical cell.
+            direction: Movement direction, as a unit vector.
+
+        Returns:
+            True if the destination cell exists and is not blocked by a
+            wall or a solid cell.
+        """
         x, y = cell
         dx, dy = direction
         nx, ny = x + dx, y + dy
@@ -420,8 +447,16 @@ class GameView(arcade.View):
                 and not maze[y][x] & DIRECTION_WALL[direction]
                 and maze[ny][nx] != 15)
 
-    # ajout: deplacement du joueur
     def _move_player(self, delta_time: float) -> None:
+        """Advance the player's half-step animation and grid movement.
+
+        Mirrors ``_move_ghosts``: the first half-step commits to a
+        destination cell (preferring the queued direction when it is
+        walkable), the second half finishes sliding into it.
+
+        Args:
+            delta_time: Elapsed time, in seconds, since the last tick.
+        """
         self._player_clock += delta_time
         half_step = self.player_speed / 2
 
@@ -430,8 +465,6 @@ class GameView(arcade.View):
             self._player_at_midpoint = not self._player_at_midpoint
 
             if self._player_at_midpoint:
-                # ajout: permet de bloquer sur une direction demander et tant
-                # que bloquer continue sur la direction de base
                 direction = self.player_dir
                 if (self.player_next_dir != (0, 0)
                         and self._can_step(self.player.cell,
@@ -441,8 +474,7 @@ class GameView(arcade.View):
                 if (direction == (0, 0)
                         or not self._can_step(self.player.cell, direction)):
                     self._player_at_midpoint = False
-                    # ajout: pour eviter rollback contact avec mur
-                    self._player_from = self._player_to  # ajout
+                    self._player_from = self._player_to
                     continue
 
                 self.player_dir = direction
@@ -459,38 +491,40 @@ class GameView(arcade.View):
                 x, y = self.player.cell
                 dx, dy = self.player_dir
 
-                # ajout: pour changer de direction sans trop de delai
-                if (self.player_next_dir == (-dx, -dy)  # ajout
-                        and self._can_step(self.player.cell,  # ajout
-                                           self.player_next_dir)):  # ajout
-                    self.player_dir = self.player_next_dir  # ajout
-                    dx, dy = self.player_dir  # ajout
+                if (self.player_next_dir == (-dx, -dy)
+                        and self._can_step(self.player.cell,
+                                           self.player_next_dir)):
+                    self.player_dir = self.player_next_dir
+                    dx, dy = self.player_dir
 
-                    if dx > 0:  # ajout
-                        self.player.scale_x = abs(self.player.scale_x)  # ajout
-                    elif dx < 0:  # ajout
+                    if dx > 0:
+                        self.player.scale_x = abs(self.player.scale_x)
+                    elif dx < 0:
                         self.player.scale_x = -abs(self.player.scale_x)
                 else:
-                    self.player.cell = (x + dx, y + dy)  # modif
+                    self.player.cell = (x + dx, y + dy)
 
                 new_x, new_y = self.maze.convert_screen_coords(
                     (self.player.cell[0] * 2, self.player.cell[1] * 2))
 
-            # ajout: anim
-            self._player_from = self._player_to  # ajout
-            self._player_to = (new_x, new_y)  # ajout
+            self._player_from = self._player_to
+            self._player_to = (new_x, new_y)
 
-        # ajout: deplacement flui vers la prochaine case
-        t = min(self._player_clock / half_step, 1.0)  # ajout
-        self.player.center_x = (self._player_from[0]  # ajout
-                                + (self._player_to[0]  # ajout
-                                   - self._player_from[0]) * t)  # ajout
-        self.player.center_y = (self._player_from[1]  # ajout
-                                + (self._player_to[1]  # ajout
-                                   - self._player_from[1]) * t)  # ajout
+        t = min(self._player_clock / half_step, 1.0)
+        self.player.center_x = (self._player_from[0]
+                                + (self._player_to[0]
+                                   - self._player_from[0]) * t)
+        self.player.center_y = (self._player_from[1]
+                                + (self._player_to[1]
+                                   - self._player_from[1]) * t)
 
-    # ajout: change de direction dans le talbeau grace aux coordonnee
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        """Handle pause, cheat menu, quit and movement key presses.
+
+        Args:
+            symbol: Key that was pressed.
+            modifiers: Active modifier keys (unused).
+        """
         if symbol == arcade.key.ESCAPE:
             self.window.switch_menu()
 
@@ -510,6 +544,7 @@ class GameView(arcade.View):
             self.player_next_dir = (1, 0)
 
     def _load_hud(self) -> None:
+        """Create the score, lives, level and timer HUD text objects."""
         self.life = self.config[1].get("live")
         self.score = 0
         self.level = self.lvl[self.lvl_nb].get("name")
@@ -556,6 +591,7 @@ class GameView(arcade.View):
                                )
 
     def _maze_generation(self) -> None:
+        """Generate the first level's maze and build its ``Maze`` view."""
         self.game = self.window.new_game(self.config[1], self.lvl)
 
         self.maze: Maze = Maze(self.config[1], self.window.first_maze,
@@ -563,6 +599,12 @@ class GameView(arcade.View):
         self.maze.generate_maze()
 
     def next_level(self, width: int, height: int) -> None:
+        """Generate the next level's maze, entities and HUD timer.
+
+        Args:
+            width: Width of the next level's maze.
+            height: Height of the next level's maze.
+        """
         self.next_maze: list[list[int]] = self.window.new_maze((width,
                                                                 height),
                                                                0)
@@ -580,28 +622,32 @@ class GameView(arcade.View):
         self.pink = self.maze.pink
 
         self._ghost_clock = 0.0
-        self._ghost_at_midpoint = False  # ajout
-        self._player_clock = 0.0  # ajout
-        self._player_at_midpoint = False  # ajout
-        self.player_dir = (0, 0)  # ajout
-        self.player_next_dir = (0, 0)  # ajout
-        self._reset_collision_tracking()  # ajout
+        self._ghost_at_midpoint = False
+        self._player_clock = 0.0
+        self._player_at_midpoint = False
+        self.player_dir = (0, 0)
+        self.player_next_dir = (0, 0)
+        self._reset_collision_tracking()
 
         self.time_elapsed = self.config[1].get("level_max_time")
 
     def _collectibles(self) -> None:
+        """Initialize the empty pacgum and super-pacgum sprite lists."""
         self.pacgum: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.super_pac: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
 
     def _load_sprite(self) -> None:
+        """Load the background and maze textures for the current level.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            # Loads the background
             self.background = arcade.load_texture(f"{PATH}maze_back.png")
 
-            # Loads the maze components and the player
             self.wall = arcade.load_texture(f"{MAZE_PATH}wall.png")
             self.ground = arcade.load_texture(f"{MAZE_PATH}ground.png")
 

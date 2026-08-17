@@ -5,7 +5,7 @@
 Équipe : **Benjamin** (bbeaurai / bebejamin1) — logique de jeu, algorithmes des fantômes, parsing, résolution de bugs
 et **Noémie** (npillet / noemiepi) — assets graphiques, interfaces (UI), README, résolution de bugs.
 
-voir images
+Les captures du suivi (Kanban, Gantt, équipe, risques, tests) sont dans `project_management/Images/` et référencées au fil des sections ci-dessous.
 
 ---
 
@@ -20,6 +20,8 @@ voir images
 | --- | --- | --- |
 | Packaging & publication Itch.io | Régression : sélection des menus au clavier · Affichage/zoom du maze · Hover sur les menus · Animations | Config JSON, A-Maze-ing, joueur/fantômes, pacgums, score, mode triche, highscore, UI complète, lint-strict, README |
 
+![Kanban du projet](Images/01_kanban.png)
+
 ## Planning réel — par semaine (S1 → S6)
 
 | Semaine | Période | Réalisations principales |
@@ -30,6 +32,8 @@ voir images
 | S4 | 27/07 – 02/08 | Cheat mode quasi complet ; mise en place des fantômes ; compte Itch.io créé |
 | S5 | 03/08 – 09/08 | `lint-strict` démarré ; déplacement des fantômes rendu fonctionnel |
 | S6 (fin) | 10/08 – 15/08 | `lint-strict` terminé, README fini ; corrections diverses ; rédaction du project management |
+
+![Gantt du projet](Images/02_gantt.png)
 
 ## B. Suivi réel vs. prévisionnel — points clés
 
@@ -55,6 +59,8 @@ voir images
 | **Probabilité moyenne** | — | Labyrinthe mal affiché · Niveaux ignorant la seed · Cheat cassant le score | Retard sur le déplacement des fantômes |
 | **Probabilité faible** | Régression clavier sur les menus | Bug d'affichage du highscore | — |
 
+![Matrice des risques](Images/04_risks.png)
+
 Tous les risques marqués comme matérialisés dans le journal de bord ont été résolus, à l'exception de la **régression clavier** et du **retard de packaging**, encore ouverts au 15/08.
 
 ## E. Organisation de l'équipe
@@ -64,11 +70,15 @@ Tous les risques marqués comme matérialisés dans le journal de bord ont été
 | **Benjamin** | Parsing config/leaderboard, algorithme des fantômes (greedy), game engine, règles, cheats | Collision fantôme/joueur, crash cheat vitesse, seed non respectée, intégration du `.whl` A-Maze-ing |
 | **Noémie** | Assets graphiques et sons, tous les écrans UI, rédaction du README | Menu highscore cassé par défaut, centrage du labyrinthe, hover des menus |
 
+![Organisation de l'équipe](Images/03_team.png)
+
 Décisions prises en binôme, workflow Git par branches fusionnées progressivement. **Aucun conflit bloquant** relevé ; seul point de vigilance : retard de +2 jours sur les assets graphiques, communiqué tôt et absorbé.
 
 ## F. Plan de tests de recette — résultat
 
 **17 fonctionnalités vérifiées** : 4 sans bug, 9 avec bug trouvé et corrigé, 2 encore ouvertes (collision joueur/mur, sélection clavier des menus), 2 non testées (spawn pacgum à confirmer, packaging final).
+
+![Plan de tests de recette](Images/05_tests.png)
 
 ## G. Blocages et conflits — résumé
 
@@ -85,4 +95,4 @@ Décisions prises en binôme, workflow Git par branches fusionnées progressivem
 
 ---
 
-*Document généré à partir du journal de bord du projet (frame "UPDATE" de l'excalidraw) et du suivi de fonctionnalités coché par l'équipe. Le détail complet de chaque section se trouve dans les fichiers `01_planning_gantt.md` à `07_blocages_conflits.md` du dossier `project_management/`.*
+*Document généré à partir du journal de bord du projet (frame "UPDATE" de l'excalidraw) et du suivi de fonctionnalités coché par l'équipe. Le détail visuel de chaque section (Kanban, Gantt, équipe, risques, tests) est disponible dans le dossier `project_management/Images/`.*

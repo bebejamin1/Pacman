@@ -9,7 +9,6 @@ from src.engine.level import Level
 from src.renderer.in_game.characters import Player, Enemies
 from src.renderer.in_game.sprite import Object
 
-# ----| CONSTANTS |---- #
 PATH = "assets/maze/"
 PATH_PAC = "assets/collectibles/"
 PLAYER_PATH = "assets/player/"
@@ -23,18 +22,28 @@ GROUND = f"{PATH}ground.png"
 
 SPRITE_SIZE = 32 * 2
 CHARACTER_SIZE = 0.6
-# --------------------- #
 
 
 class Maze():
+    """Builds and holds the on-screen sprites for one level's maze."""
+
     def __init__(self, config: dict[str, Any], maze: list[list[int]],
                  lvl_nb: int, width: float, height: float) -> None:
+        """Compute the maze's on-screen scale and prepare its sprite lists.
+
+        Args:
+            config: Parsed configuration dictionary.
+            maze: Wall-bitmask grid, as produced by the maze generator.
+            lvl_nb: Index of the level being built.
+            width: Window width, in pixels.
+            height: Window height, in pixels.
+        """
         self.config: dict[str, Any] = config
         self.maze: list[list[int]] = maze
         self.width: float = width
         self.height: float = height
 
-        self.pac_chance = 0.5  # pas moins de 0.5
+        self.pac_chance = 0.5
 
         self.level: Level = Level(self.maze, lvl_nb)
         self.game_levels: list[dict[str, Any]] = self.config["level"]
@@ -50,7 +59,6 @@ class Maze():
         self.offset_y: float = ((self.height / 2) - 100 - (self.size / 2)
                                 * (self.lvl_height - 1))
 
-        # Initialize the sprite lists
         self.wall_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ground_list: arcade.SpriteList[arcade.Sprite] = \
             arcade.SpriteList()
@@ -68,6 +76,7 @@ class Maze():
         self.pink_lst: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
 
     def _clear_list(self) -> None:
+        """Empty every sprite list before rebuilding the maze."""
         self.wall_list.clear()
         self.ground_list.clear()
 
@@ -82,6 +91,14 @@ class Maze():
         self.pink_lst.clear()
 
     def generate_maze(self) -> None:
+        """Build the wall, ground and collectible sprites for the level.
+
+        Walks the wall-bitmask grid cell by cell, placing a wall sprite
+        wherever a bit indicates one, a ground tile under every open
+        cell, a super-pacgum in each of the four corners, and pacgums
+        on open corridor tiles with a decreasing probability as the
+        level grows, so bigger mazes do not get overcrowded.
+        """
         self._clear_list()
 
         level = self.maze
@@ -99,7 +116,6 @@ class Maze():
                 if maze_height < screen_y:
                     maze_height = screen_y
 
-                # Places the walls
                 if cell & 1:
                     self._build_walls(screen_x, screen_y - 1, WALL, 0)
                 if cell & 2:
@@ -116,7 +132,6 @@ class Maze():
                 self._build_walls(screen_x + 1, screen_y + 1, WALL, 0)
                 self._build_walls(screen_x + 1, screen_y - 1, WALL, 0)
 
-                # Places the pacgums and super pacgums
                 if cell != 15:
                     if screen_x == 0 and screen_y == 0:
                         self._build_super_pacgum((screen_x, screen_y))
@@ -133,9 +148,6 @@ class Maze():
                           screen_y == (self.lvl_height * 2 - 2)):
                         self._build_super_pacgum((screen_x, screen_y))
 
-                    # Places pacgums in the corridor tiles that link this
-                    # cell to its east/south neighbour (open passage only,
-                    # ie no wall bit set on that side)
                     if (not (cell & 2) and y + 1 < self.lvl_width
                             and level[x][y + 1] != 15):
                         if random() <= self.pac_chance:
@@ -146,7 +158,6 @@ class Maze():
                         if random() <= self.pac_chance:
                             self._build_pacgum((screen_x, screen_y + 1))
 
-                # Places the ground
                 self._build_ground(screen_x, screen_y)
                 self._build_ground(screen_x, screen_y - 1)
                 self._build_ground(screen_x, screen_y + 1)
@@ -170,6 +181,17 @@ class Maze():
                 self._build_pacgum((x * 2, y * 2))
 
     def _build_walls(self, x: int, y: int, wall: str, angle: float) -> None:
+        """Place a single wall sprite on the screen grid.
+
+        Args:
+            x: Screen-grid column.
+            y: Screen-grid row.
+            wall: Path to the wall texture.
+            angle: Rotation angle, in degrees.
+
+        Raises:
+            ValueError: If the wall texture asset is missing.
+        """
         try:
             front_wall = Object(wall, self.scale, angle)
 
@@ -184,6 +206,15 @@ class Maze():
         self.wall_list.append(front_wall)
 
     def _build_ground(self, x: int, y: int) -> None:
+        """Place a single ground sprite on the screen grid.
+
+        Args:
+            x: Screen-grid column.
+            y: Screen-grid row.
+
+        Raises:
+            ValueError: If the ground texture asset is missing.
+        """
         try:
             ground = Object(GROUND, self.scale, 0)
 
@@ -198,6 +229,14 @@ class Maze():
         self.ground_list.append(ground)
 
     def _build_pacgum(self, cell: Cell) -> None:
+        """Place a single pacgum sprite on the screen grid.
+
+        Args:
+            cell: Screen-grid cell to place the pacgum on.
+
+        Raises:
+            ValueError: If the pacgum texture asset is missing.
+        """
         try:
             pacgum = Object(PACGUM, self.scale * 0.5, 0)
 
@@ -212,6 +251,14 @@ class Maze():
         self.pacgum_list.append(pacgum)
 
     def _build_super_pacgum(self, cell: Cell) -> None:
+        """Place a single super-pacgum sprite on the screen grid.
+
+        Args:
+            cell: Screen-grid cell to place the super-pacgum on.
+
+        Raises:
+            ValueError: If the super-pacgum texture asset is missing.
+        """
         try:
             sup_pacgum = Object(SUPER_PAC, self.scale, 0)
 
@@ -226,7 +273,7 @@ class Maze():
         self.super_pac.append(sup_pacgum)
 
     def _load_entities(self) -> None:
-        # Clears the entities lists
+        """Reload the player and the four ghosts at their spawn points."""
         self.player_list.clear()
 
         self.red_lst.clear()
@@ -234,13 +281,16 @@ class Maze():
         self.cyan_lst.clear()
         self.pink_lst.clear()
 
-        # Loads the player at its spawn-point
         self._load_player()
 
-        # Loads the enemies at their spawn-point
         self._load_enemies()
 
     def _load_player(self) -> None:
+        """Create the player sprite and place it at its spawn point.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             char_walk_anim = [
                 arcade.load_texture(f"{PLAYER_PATH}walk/walk1.png"),
@@ -268,11 +318,16 @@ class Maze():
         new_x, new_y = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = new_x
         self.player.center_y = new_y
-        self.player.cell = (x, y)  # ajout: case logique de depart
+        self.player.cell = (x, y)
 
         self.player_list.append(self.player)
 
     def _load_enemies(self) -> None:
+        """Create the four ghost sprites and place them in the corners.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             arcade.load_texture(f"{ENEMY_PATH}alive/red_ghost.png")
             arcade.load_texture(f"{ENEMY_PATH}alive/orange_ghost.png")
@@ -328,6 +383,12 @@ class Maze():
         self.pink_lst.append(self.pink)
 
     def _find_scale(self) -> float:
+        """Compute the sprite scale that fits the maze within the window.
+
+        Returns:
+            The largest scale factor that keeps the whole maze on
+            screen, with a small margin.
+        """
         margin = 0.9
 
         maze_px_width = SPRITE_SIZE * (self.lvl_width + 1)
@@ -340,14 +401,13 @@ class Maze():
                    available_height / maze_px_height)
 
     def _restart_level(self) -> None:
-        # Player's respawn point
+        """Move the player and every ghost back to their spawn points."""
         x, y = self.level.player_spawn
         nx, ny = self.convert_screen_coords((x * 2, y * 2))
         self.player.center_x = nx
         self.player.center_y = ny
-        self.player.cell = (x, y)  # ajout: reinitialise la case
+        self.player.cell = (x, y)
 
-        # Ghosts' respawn
         i: int = 0
         for cell in self.level.corners:
             x, y = cell
@@ -379,8 +439,16 @@ class Maze():
 
             i += 1
 
-    # modif: ne round() plus les coord
     def convert_screen_coords(self, cell: Cell) -> tuple[float, float]:
+        """Convert a screen-grid cell to pixel coordinates.
+
+        Args:
+            cell: Screen-grid cell, on the doubled-resolution grid used
+                for half-step ghost and player animation.
+
+        Returns:
+            The corresponding ``(x, y)`` pixel coordinates.
+        """
         x, y = cell
 
         nx = (x * self.size + (self.width / 2) -
@@ -391,7 +459,15 @@ class Maze():
         return (nx, ny)
 
     def convert_cell_coords(self, screen_x: float, screen_y: float) -> Cell:
+        """Convert pixel coordinates back to a maze grid cell.
 
+        Args:
+            screen_x: Pixel x coordinate.
+            screen_y: Pixel y coordinate.
+
+        Returns:
+            The corresponding maze grid cell.
+        """
         nx = round((screen_x - (self.width / 2 - self.offset_x))
                    / self.size)
 

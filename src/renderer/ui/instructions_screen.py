@@ -5,22 +5,26 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 FONT_PATH = "assets/font/"
-# --------------------- #
 
 
 class InstructionsView(arcade.View):
-    """
-    This class will display the game's control and instructions.
-    """
+    """Displays the game's controls and rules."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Load the instructions background and build the text objects.
+
+        Args:
+            window: Owning game window.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.text_list: list[arcade.Text] = []
 
-        # Loads the background
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
@@ -35,7 +39,7 @@ class InstructionsView(arcade.View):
         self.game_instructions()
 
     def game_instructions(self) -> None:
-        # Controls during the game
+        """Build the controls and rules text objects."""
         commands = arcade.Text(text="Commands:", x=30, y=770,
                                color=arcade.color.BLACK, font_size=30,
                                align="left", font_name="Public Pixel")
@@ -57,7 +61,6 @@ class InstructionsView(arcade.View):
         self.text_list.append(pause)
         self.text_list.append(quit)
 
-        # Rules of the game
         rules = arcade.Text(text="Rules:", x=30, y=530,
                             color=arcade.color.BLACK, font_size=28,
                             align="left", font_name="Public Pixel")
@@ -93,16 +96,21 @@ class InstructionsView(arcade.View):
         self.text_list.append(text)
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        """Return to the main menu.
+
+        Args:
+            symbol: Key that was pressed.
+            modifiers: Active modifier keys (unused).
+        """
         if symbol == arcade.key.ESCAPE:
             self.window.switch_menu()
 
     def on_draw(self) -> None:
+        """Draw the background and the instructions text."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
-        # Prints the instructions
         for text in self.text_list:
             text.draw()

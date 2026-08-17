@@ -1,3 +1,4 @@
+"""Game engine layer: rules, entities, level and maze-agnostic game state."""
 
 from src.engine.algo import Cell, Greddy, Mode, Personality
 from src.engine.entities import Ghost, GhostState, Player

@@ -1,4 +1,4 @@
-
+"""Level state derived from a generated maze grid: spawns and collectibles."""
 
 from enum import Enum
 
@@ -14,24 +14,27 @@ WALL_BITS: dict[Cell, int] = {
 }
 
 
-# *****************************************************************************
-# *                                   EATEN                                   *
-# *                                                                           *
-
 class Eaten(Enum):
+    """What, if anything, was eaten on a given cell."""
 
     NOTHING = "nothing"
     PACGUM = "pacgum"
     SUPER = "super"
 
 
-# *****************************************************************************
-# *                                   LEVEL                                   *
-# *                                                                           *
-
 class Level:
-    def __init__(self, maze: list[list[int]], number: int) -> None:
+    """A single level: the maze grid, spawns and remaining collectibles."""
 
+    def __init__(self, maze: list[list[int]], number: int) -> None:
+        """Derive spawns and collectible positions from a maze grid.
+
+        Args:
+            maze: Wall-bitmask grid, as produced by the maze generator.
+            number: One-based level number.
+
+        Raises:
+            ValueError: If the maze has no walkable cell.
+        """
         self.maze = maze
         self.number = number
         self.height = len(maze)
@@ -51,10 +54,17 @@ class Level:
         self.super_pacgums = set(self.corners)
         self.pacgums = (open_cells - self.super_pacgums - {self.player_spawn})
 
-# ================================= CAN MOVE ==================================
-
     def can_move(self, cell: Cell, direction: Cell) -> bool:
+        """Check whether an entity can move from ``cell`` in ``direction``.
 
+        Args:
+            cell: Starting cell.
+            direction: Movement direction, as a unit vector.
+
+        Returns:
+            True if the destination cell exists and is not blocked by a
+            wall or a solid cell.
+        """
         bit = WALL_BITS.get(direction)
         if (bit is None):
             return False
@@ -66,10 +76,15 @@ class Level:
                 and not self.maze[y][x] & bit
                 and self.maze[ny][nx] != SOLID)
 
-# ==================================== EAT ====================================
-
     def eat(self, cell: Cell) -> Eaten:
+        """Consume whatever collectible sits on ``cell``, if any.
 
+        Args:
+            cell: Cell the player just moved onto.
+
+        Returns:
+            The kind of collectible that was eaten, or ``Eaten.NOTHING``.
+        """
         if (cell in self.pacgums):
             self.pacgums.remove(cell)
             return Eaten.PACGUM
@@ -80,15 +95,22 @@ class Level:
 
         return (Eaten.NOTHING)
 
-# ================================== CLEARED ==================================
-
     @property
     def cleared(self) -> bool:
+        """Whether every pacgum and super-pacgum has been eaten."""
         return (not self.pacgums and not self.super_pacgums)
-
-# ================================== CLOSEST ==================================
 
     @staticmethod
     def _closest(target: Cell, cells: set[Cell]) -> Cell:
+        """Return the cell in ``cells`` closest to ``target``.
+
+        Args:
+            target: Reference cell, which may not itself be walkable.
+            cells: Candidate walkable cells.
+
+        Returns:
+            The candidate cell with the smallest squared distance to
+            ``target``.
+        """
         return min(cells, key=lambda c: (c[0] - target[0]) ** 2
                    + (c[1] - target[1]) ** 2)

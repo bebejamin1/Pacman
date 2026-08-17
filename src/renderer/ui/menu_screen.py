@@ -1,5 +1,3 @@
-
-
 import os
 import arcade
 
@@ -7,18 +5,20 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
 BUTTON_PATH = "assets/menu/"
-# --------------------- #
 
 
 class MenuView(arcade.View):
-    """
-    This class will display the main menu.
-    """
+    """Main menu: Start Game, Instructions, Highscore and Exit."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Load the menu's background, sounds and buttons.
+
+        Args:
+            window: Owning game window.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
@@ -29,11 +29,16 @@ class MenuView(arcade.View):
         self.button: int = 0
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        """Navigate the menu and trigger the selected action.
+
+        Args:
+            symbol: Key that was pressed.
+            modifiers: Active modifier keys (unused).
+        """
         if symbol == arcade.key.ESCAPE:
             print("Bye bye!")
             arcade.exit()
 
-        # Navigates through the menu using key arrows
         if symbol == arcade.key.UP:
             self.button -= 1
         if symbol == arcade.key.DOWN:
@@ -93,6 +98,14 @@ class MenuView(arcade.View):
 
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
+        """Trigger the action of the button clicked with the mouse.
+
+        Args:
+            x: Cursor x coordinate.
+            y: Cursor y coordinate.
+            button: Mouse button that was pressed (unused).
+            _modifiers: Active modifier keys (unused).
+        """
         hit = arcade.get_sprites_at_point((x, y), self.button_list)
 
         for sprite in hit:
@@ -117,13 +130,12 @@ class MenuView(arcade.View):
                 arcade.exit()
 
     def on_draw(self) -> None:
+        """Draw the background and the menu buttons."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
-        # Buttons' placement
         self.start.center_x = self.window.width / 4
         self.start.center_y = self.window.height / 1.5
 
@@ -148,24 +160,25 @@ class MenuView(arcade.View):
         self.click_exit.center_x = self.window.width / 8.47
         self.click_exit.center_y = self.window.height / 2.75
 
-        # Draws the buttons
         self.button_list.draw()
 
     def _load(self) -> None:
+        """Load the menu's textures, sounds and buttons.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}main_menu.png")
 
-            # Loads the music and effect
             self.menu_music = arcade.load_sound(f"{MUSIC_PATH}music/menu.wav")
             self.game_music = arcade.load_sound(f"{MUSIC_PATH}music/game.mp3")
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
-            # Loads the buttons' sprites and put them in a list
             self.start = arcade.Sprite(f"{BUTTON_PATH}start.png")
             self.inst = arcade.Sprite(f"{BUTTON_PATH}instructions.png")
             self.high = arcade.Sprite(f"{BUTTON_PATH}highscore.png")

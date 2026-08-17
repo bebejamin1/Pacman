@@ -1,12 +1,10 @@
+"""Greedy pathfinding used to drive the ghosts' autonomous movement.
 
-
+At each cell, a ghost picks the open neighbour that locally minimizes the
+distance to its target: it never plans a full path and never looks ahead
+beyond one step. This is cheap to compute and gives each personality a
+distinct, recognizable behaviour without needing a full pathfinding graph.
 """
-C'est un algorithme glouton (greedy en anglais) : à chaque case, le fantôme
-choisit le voisin qui minimise localement la distance à sa cible,
-sans jamais planifier de chemin complet ni revenir en arrière.
-distance euclidienne fantome efficace mais pas parfait
-"""
-
 
 import random
 from collections import deque
@@ -24,21 +22,15 @@ MOVES: list[tuple[int, int, int]] = [
 Cell = tuple[int, int]
 
 
-# *****************************************************************************
-# *                                MODE                                       *
-# *                                                                           *
-
 class Mode(Enum):
+    """Ghost behaviour mode."""
 
     CHASE = "chase"
     FRIGHTENED = "frightened"
 
 
-# *****************************************************************************
-# *                            PERSONNALITY                                   *
-# *                                                                           *
-
 class Personality(Enum):
+    """Ghost personality, driving how it picks its target cell."""
 
     CHASER = "chaser"
     AMBUSHER = "ambusher"
@@ -46,11 +38,8 @@ class Personality(Enum):
     SHY = "shy"
 
 
-# *****************************************************************************
-# *                               GREDDY                                      *
-# *                                                                           *
-
 class Greddy:
+    """Greedy, personality-driven movement brain for a single ghost."""
 
     AMBUSH_LOOKAHEAD = 4
     SHY_DISTANCE = 8
@@ -60,7 +49,14 @@ class Greddy:
 
     def __init__(self, maze: list[list[int]], personality: Personality,
                  home_corner: Cell, seed: int | None = None) -> None:
+        """Create a movement brain bound to one maze and personality.
 
+        Args:
+            maze: Wall-bitmask grid the ghost moves through.
+            personality: Behaviour driving target selection.
+            home_corner: Cell the ghost returns to when reset or eaten.
+            seed: Optional seed for the internal random generator.
+        """
         self._maze = maze
         self.personality = personality
         self._home = home_corner
@@ -68,12 +64,20 @@ class Greddy:
         self._recent: deque[Cell] = deque(maxlen=self.MEMORY)
         self._rng = random.Random(seed)
 
-# ============================= NEXT MOVE =====================================
-
     def next_move(self, ghost: Cell, player: Cell,
                   player_dir: Cell = (0, 0),
                   mode: Mode = Mode.CHASE) -> Cell:
+        """Pick the next cell for the ghost to move to.
 
+        Args:
+            ghost: Ghost's current cell.
+            player: Player's current cell.
+            player_dir: Player's current movement direction.
+            mode: Current ghost mode (chase or frightened).
+
+        Returns:
+            The cell the ghost should move to next.
+        """
         options = self._open_neighbors(ghost)
         if not (options):
             return (ghost)
@@ -105,21 +109,31 @@ class Greddy:
         target = self._target(ghost, player, player_dir)
         return min(options, key=lambda c: self._dist(c, target))
 
-# ============================== RESET ========================================
-
     def reset(self) -> None:
+        """Clear the ghost's movement history, as after a respawn."""
         self._prev = None
         self._recent.clear()
 
-# ============================= SET MAZE ======================================
-
     def set_maze(self, maze: list[list[int]]) -> None:
+        """Bind the brain to a new maze and reset its movement history.
+
+        Args:
+            maze: Wall-bitmask grid of the new level.
+        """
         self._maze = maze
         self.reset()
 
-# ============================== TARGET =======================================
-
     def _target(self, ghost: Cell, player: Cell, player_dir: Cell) -> Cell:
+        """Compute the cell this personality is currently aiming for.
+
+        Args:
+            ghost: Ghost's current cell.
+            player: Player's current cell.
+            player_dir: Player's current movement direction.
+
+        Returns:
+            The target cell used to rank the candidate moves.
+        """
         manhattan = (abs(ghost[0] - player[0])
                      + abs(ghost[1] - player[1]))
         if (self.personality is Personality.AMBUSHER):
@@ -131,15 +145,28 @@ class Greddy:
             return (player if manhattan >= self.SHY_DISTANCE else self._home)
         return (player)
 
-# ============================= KEEP FRESH ====================================
-
     def _keep_fresh(self, options: list[Cell]) -> list[Cell]:
+        """Filter out recently visited cells to avoid back-and-forth moves.
+
+        Args:
+            options: Candidate cells to move to.
+
+        Returns:
+            The candidates not visited recently, or all of them if that
+            would leave no option.
+        """
         fresh = [c for c in options if c not in self._recent]
         return (fresh if fresh else options)
 
-# =========================== OPEN NEIGHBORS ==================================
-
     def _open_neighbors(self, cell: Cell) -> list[Cell]:
+        """List the cells reachable from ``cell`` in a single step.
+
+        Args:
+            cell: Cell to look around.
+
+        Returns:
+            Neighbouring cells not separated from ``cell`` by a wall.
+        """
         x, y = cell
         height, width = len(self._maze), len(self._maze[0])
         neighbors = []
@@ -151,8 +178,7 @@ class Greddy:
                 neighbors.append((nx, ny))
         return (neighbors)
 
-# =============================== DIST ========================================
-
     @staticmethod
     def _dist(a: Cell, b: Cell) -> int:
+        """Return the squared Euclidean distance between two cells."""
         return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)

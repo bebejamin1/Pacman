@@ -1,5 +1,3 @@
-
-
 import os
 import arcade
 
@@ -7,17 +5,19 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
-# --------------------- #
 
 
 class PauseView(arcade.View):
-    """
-    This class manages the pause menu.
-    """
+    """Pause menu: resume the game or return to the main menu."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Load the pause menu's background, sound and buttons.
+
+        Args:
+            window: Owning game window.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
@@ -26,6 +26,12 @@ class PauseView(arcade.View):
         self._load()
 
     def on_key_press(self, key: int, _modifiers: int) -> None:
+        """Resume the game or return to the main menu.
+
+        Args:
+            key: Key that was pressed.
+            _modifiers: Active modifier keys (unused).
+        """
         if key == arcade.key.ESCAPE:
             arcade.play_sound(self.effect)
             self.window.play_music(self.window.game_music, True, False)
@@ -38,6 +44,14 @@ class PauseView(arcade.View):
 
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
+        """Trigger the action of the button clicked with the mouse.
+
+        Args:
+            x: Cursor x coordinate.
+            y: Cursor y coordinate.
+            button: Mouse button that was pressed (unused).
+            _modifiers: Active modifier keys (unused).
+        """
         hit = arcade.get_sprites_at_point((x, y), self.button_list)
 
         for sprite in hit:
@@ -52,34 +66,31 @@ class PauseView(arcade.View):
                 print("Return Menu")
 
     def on_draw(self) -> None:
+        """Draw the background, buttons and pause title."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
-        # Draws a semi-opaque black layer on the screen
         arcade.draw_rect_filled(arcade.XYWH(self.width / 2,
                                             self.height / 2,
                                             self.width,
                                             self.height),
                                 (0, 0, 0, 128))
 
-        # Buttons' placement
         self.resume.center_x = self.width / 2
         self.resume.center_y = self.height - 450
 
         self.menu.center_x = self.width / 2
         self.menu.center_y = self.height - 600
 
-        # Draws text
         self.pause.draw()
 
-        # Draws the buttons
         self.button_list.draw()
 
     def _load_text(self) -> None:
+        """Create the pause title and button text sprites."""
         self.pause = arcade.Text(
             text="PAUSE",
             x=self.width / 2,
@@ -104,23 +115,24 @@ class PauseView(arcade.View):
             font_name="Public Pixel"
                                              )
 
-        # Appends the buttons on a list
         self.button_list.append(self.resume)
         self.button_list.append(self.menu)
 
     def _load(self) -> None:
+        """Load the pause menu's background, sound and text.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}maze_back.png")
 
-            # Loads the music and effect
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
-            # Loads the text
             self._load_text()
 
         except FileNotFoundError:

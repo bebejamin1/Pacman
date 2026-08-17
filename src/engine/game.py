@@ -1,4 +1,4 @@
-
+"""Maze-agnostic game simulation: rules, state machine and entity updates."""
 
 from dataclasses import dataclass
 from enum import Enum
@@ -9,11 +9,8 @@ from src.engine.entities import Ghost, GhostState, Player
 from src.engine.level import Eaten, Level
 
 
-# *****************************************************************************
-# *                                GAME STATE                                 *
-# *                                                                           *
-
 class GameState(Enum):
+    """Current phase of a running game."""
 
     RUNNING = "running"
     PAUSED = "paused"
@@ -22,12 +19,9 @@ class GameState(Enum):
     VICTORY = "victory"
 
 
-# *****************************************************************************
-# *                                   RULES                                   *
-# *                                                                           *
-
 @dataclass
 class Rules:
+    """Tunable game rules, derived from the configuration file."""
 
     lives: int = 3
     pacgum_points: int = 10
@@ -39,10 +33,19 @@ class Rules:
     player_step: float = 0.16
     ghost_step: float = 0.20
 
-# ================================= FROM CONF =================================
-
     @classmethod
     def from_conf(cls, conf: dict[str, Any]) -> "Rules":
+        """Build a ``Rules`` instance from a parsed configuration dict.
+
+        Only known, strictly positive numeric values override the
+        defaults; anything missing or invalid keeps its default.
+
+        Args:
+            conf: Parsed configuration dictionary.
+
+        Returns:
+            A ``Rules`` instance with defaults overridden by ``conf``.
+        """
         rules = cls()
         keys = {"live": "lives",
                 "pacgum_points": "pacgum_points",
@@ -57,12 +60,9 @@ class Rules:
         return (rules)
 
 
-# *****************************************************************************
-# *                                  CHEATS                                   *
-# *                                                                           *
-
 @dataclass
 class Cheats:
+    """Cheat-mode toggles, used for peer review purposes."""
 
     invincible: bool = False
     freeze_ghosts: bool = False
@@ -75,12 +75,18 @@ PERSONALITIES: tuple[Personality, ...] = (
 )
 
 
-# *****************************************************************************
-# *                                   GAME                                    *
-# *                                                                           *
 class Game:
+    """Runs the maze-agnostic simulation: player, ghosts, score and state."""
+
     def __init__(self, rules: Rules, first_maze: list[list[int]],
                  total_levels: int) -> None:
+        """Start a new game on its first level.
+
+        Args:
+            rules: Tunable game rules.
+            first_maze: Wall-bitmask grid of the first level.
+            total_levels: Total number of levels in the game.
+        """
         self.rules = rules
         self.total_levels = max(1, total_levels)
         self.cheats = Cheats()
@@ -95,39 +101,44 @@ class Game:
         self._ghost_clock = 0.0
         self._load(first_maze)
 
-# =========================== SET PLAYER DIRECTION ============================
-
     def set_player_direction(self, direction: Cell) -> None:
+        """Queue the direction the player wants to move towards.
+
+        Args:
+            direction: Wanted movement direction, as a unit vector.
+        """
         self.player.wanted = direction
 
-# =============================== TOGGLE PAUSE ================================
-
     def toggle_pause(self) -> None:
+        """Switch between the running and paused states."""
         if (self.state is GameState.RUNNING):
             self.state = GameState.PAUSED
         elif (self.state is GameState.PAUSED):
             self.state = GameState.RUNNING
 
-# ================================ NEXT LEVEL =================================
-
     def next_level(self, maze: list[list[int]]) -> None:
-        # if (self.state is GameState.LEVEL_WON):
+        """Load the next level from a freshly generated maze.
+
+        Args:
+            maze: Wall-bitmask grid of the next level.
+        """
         self._load(maze)
 
-# ================================ SKIP LEVEL =================================
-
     def skip_level(self) -> None:
+        """Immediately win the current level (cheat mode)."""
         if (self.state in (GameState.RUNNING, GameState.PAUSED)):
             self._win_level()
 
-# ================================= ADD LIFE ==================================
-
     def add_life(self) -> None:
+        """Grant the player one extra life (cheat mode)."""
         self.lives += 1
 
-# ================================== UPDATE ===================================
-
     def update(self, dt: float) -> None:
+        """Advance the simulation by one time step.
+
+        Args:
+            dt: Elapsed time, in seconds, since the last update.
+        """
         if (self.state is not GameState.RUNNING):
             return
         self._tick_timers(dt)
@@ -136,15 +147,17 @@ class Game:
         if (self.state is GameState.RUNNING):
             self._move_ghosts(dt)
 
-# ============================== FRIGHTENED LEFT ==============================
-
     @property
     def frightened_left(self) -> float:
+        """Remaining time, in seconds, of the frightened mode."""
         return max(0.0, self._frightened_left)
 
-# =================================== LOAD ====================================
-
     def _load(self, maze: list[list[int]]) -> None:
+        """Reset the level state, player, ghosts and timers on a new maze.
+
+        Args:
+            maze: Wall-bitmask grid of the level to load.
+        """
         self.level_number += 1
         self.level = Level(maze, self.level_number)
         self.player = Player(pos=self.level.player_spawn,
@@ -163,10 +176,12 @@ class Game:
         self._player_clock = 0.0
         self._ghost_clock = 0.0
 
-# ================================ TICK TIMERS ================================
-
     def _tick_timers(self, dt: float) -> None:
+        """Advance the level, frightened and ghost-respawn timers.
 
+        Args:
+            dt: Elapsed time, in seconds, since the last update.
+        """
         self.time_left -= dt
         if (self.time_left <= 0):
             self._lose_life()
@@ -183,9 +198,12 @@ class Game:
                 if (ghost.respawn_in <= 0):
                     ghost.reset()
 
-# ================================ MOVE PLAYER ================================
-
     def _move_player(self, dt: float) -> None:
+        """Advance the player by as many grid steps as ``dt`` allows.
+
+        Args:
+            dt: Elapsed time, in seconds, since the last update.
+        """
         self._player_clock += dt
         step = self.rules.player_step
 
@@ -197,10 +215,8 @@ class Game:
             self._player_clock -= step
             self._step_player()
 
-# ================================ STEP PLAYER ================================
-
     def _step_player(self) -> None:
-
+        """Move the player by one grid cell and resolve the outcome."""
         player = self.player
         direction = player.direction
 
@@ -219,10 +235,12 @@ class Game:
         if (self.state is GameState.RUNNING):
             self._check_collisions()
 
-# ================================ MOVE GHOSTS ================================
-
     def _move_ghosts(self, dt: float) -> None:
+        """Advance every active ghost by as many grid steps as ``dt`` allows.
 
+        Args:
+            dt: Elapsed time, in seconds, since the last update.
+        """
         if (self.cheats.freeze_ghosts):
             return
         self._ghost_clock += dt
@@ -249,9 +267,12 @@ class Game:
                         or self.state is not GameState.RUNNING):
                     break
 
-# ==================================== EAT ====================================
-
     def _eat(self, cell: Cell) -> None:
+        """Resolve eating whatever collectible sits on ``cell``.
+
+        Args:
+            cell: Cell the player just moved onto.
+        """
         found = self.level.eat(cell)
         if (found is Eaten.PACGUM):
             self.score += self.rules.pacgum_points
@@ -262,10 +283,8 @@ class Game:
         if (self.level.cleared):
             self._win_level()
 
-# ============================= CHECK COLLISIONS ==============================
-
     def _check_collisions(self) -> None:
-
+        """Resolve player/ghost collisions: eat the ghost or lose a life."""
         player = self.player
         for ghost in self.ghosts:
             if (ghost.state is not GhostState.ACTIVE):
@@ -286,10 +305,8 @@ class Game:
                 self._lose_life()
                 return
 
-# ================================= LOSE LIFE =================================
-
     def _lose_life(self) -> None:
-
+        """Remove one life, ending the game or resetting the level."""
         self.lives -= 1
         if (self.lives <= 0):
             self.lives = 0
@@ -304,9 +321,8 @@ class Game:
         for ghost in self.ghosts:
             ghost.reset()
 
-# ================================= WIN LEVEL =================================
-
     def _win_level(self) -> None:
+        """Mark the level as won, or the whole game if it was the last."""
         if (self.level_number >= self.total_levels):
             self.state = GameState.VICTORY
 

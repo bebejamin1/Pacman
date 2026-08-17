@@ -1,5 +1,3 @@
-
-
 import os
 import arcade
 
@@ -10,17 +8,19 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
-# --------------------- #
 
 
 class CheatView(arcade.View):
-    """
-    This class manages the pause menu.
-    """
+    """Cheat menu used to help peer reviewers test the game."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Load the cheat menu's background, sound and buttons.
+
+        Args:
+            window: Owning game window.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
@@ -32,11 +32,25 @@ class CheatView(arcade.View):
         self._load()
 
     def on_key_press(self, key: int, _modifiers: int) -> None:
+        """Return to the game view.
+
+        Args:
+            key: Key that was pressed.
+            _modifiers: Active modifier keys (unused).
+        """
         if key == arcade.key.SPACE:
             self.window.show_view(self.window.game_view)
 
     def on_mouse_press(self, x: float, y: float, button: int,
                        _modifiers: int) -> None:
+        """Toggle the cheat clicked with the mouse.
+
+        Args:
+            x: Cursor x coordinate.
+            y: Cursor y coordinate.
+            button: Mouse button that was pressed (unused).
+            _modifiers: Active modifier keys (unused).
+        """
         hit = arcade.get_sprites_at_point((x, y), self.button_list)
 
         for sprite in hit:
@@ -102,21 +116,19 @@ class CheatView(arcade.View):
                 print("Resume Game")
 
     def on_draw(self) -> None:
+        """Draw the background, buttons and cheat title."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
-        # Draws a semi-opaque black layer on the screen
         arcade.draw_rect_filled(arcade.XYWH(self.width / 2,
                                             self.height / 2,
                                             self.width,
                                             self.height),
                                 (0, 0, 0, 128))
 
-        # Buttons' placement
         self.invincible.center_x = self.width / 2
         self.invincible.center_y = self.height - 250
 
@@ -135,13 +147,12 @@ class CheatView(arcade.View):
         self.resume.center_x = self.width / 2
         self.resume.center_y = self.height - 875
 
-        # Draws text
         self.cheat.draw()
 
-        # Draws the buttons
         self.button_list.draw()
 
     def _load_text(self) -> None:
+        """Create the cheat title and button text sprites."""
         self.cheat = arcade.Text(
             text="CHEATS",
             x=self.width / 2,
@@ -194,7 +205,6 @@ class CheatView(arcade.View):
             font_name="Public Pixel"
                                                )
 
-        # Appends the buttons on a list
         self.button_list.append(self.invincible)
         self.button_list.append(self.skip)
         self.button_list.append(self.stop_ghost)
@@ -203,18 +213,20 @@ class CheatView(arcade.View):
         self.button_list.append(self.resume)
 
     def _load(self) -> None:
+        """Load the cheat menu's background, sound and text.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}maze_back.png")
 
-            # Loads the music and effect
             self.effect = arcade.load_sound(f"{MUSIC_PATH}effect/select.mp3")
 
-            # Loads the text
             self._load_text()
 
         except FileNotFoundError:

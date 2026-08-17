@@ -13,6 +13,9 @@ dependencies = [
 	"uv>=0.11.28",
 ]
 
+[tool.mypy]
+exclude = ["^\\.venv/"]
+
 [[tool.mypy.overrides]]
 module = "mazegen.*"
 ignore_errors = true

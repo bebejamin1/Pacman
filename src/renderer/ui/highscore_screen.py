@@ -1,5 +1,3 @@
-
-
 import os
 import arcade
 
@@ -9,23 +7,27 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 FONT_PATH = "assets/font/"
 LEAD_PATH = "data/leaderboard.json"
-# --------------------- #
 
 
 class HighscoreView(arcade.View):
-    """
-    This class displays the leaderboard.
-    """
+    """Displays the top-10 leaderboard."""
+
     def __init__(self, window: "GameEngine") -> None:
+        """Load the highscore background and font.
+
+        Args:
+            window: Owning game window.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.text_list: list[arcade.Text] = []
 
-        # Loads the background
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
@@ -44,6 +46,7 @@ class HighscoreView(arcade.View):
                                        font_name="Public Pixel")
 
     def leaderboard(self) -> None:
+        """Build the ranked list of highscore text objects."""
         y = 800
         i = 0
 
@@ -68,22 +71,28 @@ class HighscoreView(arcade.View):
             i += 1
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
+        """Return to the main menu.
+
+        Args:
+            symbol: Key that was pressed.
+            modifiers: Active modifier keys (unused).
+        """
         if symbol == arcade.key.ESCAPE:
             self.window.switch_menu()
 
     def on_draw(self) -> None:
+        """Draw the background and the leaderboard entries."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background,
                                  arcade.LBWH(0, 0, self.width, self.height))
 
-        # Displays the top-scorer
         for text in self.text_list:
             text.draw()
 
         self.instruction.draw()
 
     def on_show_view(self) -> None:
+        """Reload the leaderboard content each time the view is shown."""
         self.text_list.clear()
         self.leaderboard()

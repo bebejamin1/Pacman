@@ -1,4 +1,4 @@
-# python3 pac-man.py config.json
+"""Entry point: python3 pac-man.py config.json"""
 
 from src.parsing.parse_main import parser
 from fire import Fire
@@ -12,12 +12,14 @@ g = "\033[32m\033[5m\033[1m"
 
 
 def main(conf_path: str) -> None:
+    """Parse the configuration file and launch the game window.
 
+    Args:
+        conf_path: Path to the JSON configuration file.
+    """
     os.system("clear")
 
-    global json_files
-
-    json_files = parser(conf_path)
+    parser(conf_path)
 
     if (len(sys.argv) != 2):
         print("\n" + f"{r}[ERROR]{rs}: Execute using this structure:" + "\n"
@@ -32,11 +34,9 @@ def main(conf_path: str) -> None:
               "config.json`" + "\n")
         return
 
-    # Loads the game engine
     engine = GameEngine()
     engine.set_view()
 
-    # Starts the game
     engine.start_game()
 
 

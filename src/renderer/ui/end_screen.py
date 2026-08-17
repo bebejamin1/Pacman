@@ -1,5 +1,3 @@
-
-
 import os
 import arcade
 
@@ -9,17 +7,21 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
-# ----| CONSTANTS |---- #
 PATH = "assets/background/"
 MUSIC_PATH = "assets/sound/"
-# --------------------- #
 
 
 class EndView(arcade.View):
-    """
-    This class manages the finish screen (Game Over and Victory).
-    """
+    """Game Over / Victory screen, with highscore name entry."""
+
     def __init__(self, window: "GameEngine", win: bool, score: int) -> None:
+        """Prepare the end screen for a victory or a defeat.
+
+        Args:
+            window: Owning game window.
+            win: Whether the game ended in a victory.
+            score: Final score to display.
+        """
         super().__init__()
         self.window: GameEngine = window
         self.button_list: arcade.SpriteList[arcade.Sprite] = \
@@ -38,10 +40,15 @@ class EndView(arcade.View):
             self._load_defeat()
 
     def on_key_press(self, key: int, _modifiers: int) -> None:
+        """Handle the player's name entry and confirmation.
+
+        Args:
+            key: Key that was pressed.
+            _modifiers: Active modifier keys (unused).
+        """
         if key == arcade.key.ESCAPE:
             self.window.switch_menu()
 
-        # Enters the player's name
         if len(self.player) < 10:
             if arcade.key.A <= key <= arcade.key.Z:
                 self.player += chr(key)
@@ -113,21 +120,19 @@ class EndView(arcade.View):
                 self.window.switch_menu()
 
     def on_draw(self) -> None:
+        """Draw the background, result text and name entry."""
         self.clear()
 
-        # Draws the background
         arcade.draw_texture_rect(self.background, arcade.LBWH(0, 0,
                                                               self.width,
                                                               self.height))
 
-        # Draws a semi-opaque black layer on the screen
         arcade.draw_rect_filled(arcade.XYWH(self.width / 2,
                                             self.height / 2,
                                             self.width,
                                             self.height),
                                 (0, 0, 0, 128))
 
-        # Draws text depending on whether the player won or lost
         if self.win is True:
             self.victory.draw()
             self.congrat.draw()
@@ -146,6 +151,7 @@ class EndView(arcade.View):
         self.name_entry.draw()
 
     def _load_victory(self) -> None:
+        """Create the victory title and congratulation text."""
         self.victory = arcade.Text(
             text="Victory",
             x=self.width / 2,
@@ -167,6 +173,7 @@ class EndView(arcade.View):
                                   )
 
     def _load_defeat(self) -> None:
+        """Create the game-over title and defeat text."""
         self.defeat = arcade.Text(
             text="Game Over",
             x=self.width / 2,
@@ -188,6 +195,7 @@ class EndView(arcade.View):
                                  )
 
     def _load_text(self) -> None:
+        """Create the score display and name entry text objects."""
         self.score = arcade.Text(
             text="Final Score:",
             x=self.width / 2,
@@ -229,15 +237,18 @@ class EndView(arcade.View):
                                      )
 
     def _load(self) -> None:
+        """Load the end screen's background and text.
+
+        Raises:
+            ValueError: If the ``assets/`` folder is missing.
+        """
         try:
             if not os.path.exists("assets/"):
                 raise ValueError
 
-            # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}finish.png")
 
-            # Loads the text
             self._load_text()
 
         except FileNotFoundError:
