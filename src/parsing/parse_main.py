@@ -7,6 +7,10 @@ from typing import Any
 from src.parsing.parse import (parse_conf, parse_leaderbord,
                                strip_json_comments, default_leaderbord)
 
+leaderbord_path: str = ""
+config: list[Any] = []
+leaderbord_g: dict[str, Any] = {}
+
 
 # *****************************************************************************
 # *                           DELETE OVER TEN                                 *
@@ -50,8 +54,8 @@ def leaderbord_update(player_name: str, player_score: int) -> dict[str, Any]:
     except (json.decoder.JSONDecodeError, UnboundLocalError):
         print("Problem detected in the leaderboard: \nleaderboard reset")
         with open(leaderbord_path, "w") as f:
-            json.dump(default_leaderbord, leaderbord_path, indent=2)
-        return
+            json.dump(default_leaderbord, f, indent=2)
+        return default_leaderbord
 
     return (bord)
 
