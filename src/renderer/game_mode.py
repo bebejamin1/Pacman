@@ -469,7 +469,7 @@ class GameView(arcade.View):
                     if dx > 0:  # ajout
                         self.player.scale_x = abs(self.player.scale_x)  # ajout
                     elif dx < 0:  # ajout
-                        self.player.scale_x = -abs(self.player.scale_x)  # ajout
+                        self.player.scale_x = -abs(self.player.scale_x)
                 else:
                     self.player.cell = (x + dx, y + dy)  # modif
 
