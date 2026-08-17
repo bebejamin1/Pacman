@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from src.renderer.game_engine import GameEngine
 
 # ----| CONSTANTS |---- #
-PATH = "assets/menu/"
+PATH = "assets/background/"
 FONT_PATH = "assets/font/"
 LEAD_PATH = "data/leaderboard.json"
 # --------------------- #

@@ -236,7 +236,7 @@ class EndView(arcade.View):
             # Loads the background
             self.background: arcade.Texture = \
                 arcade.load_texture(f"{PATH}finish.png")
-            
+
             # Loads the text
             self._load_text()
 
