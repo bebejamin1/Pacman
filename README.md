@@ -145,8 +145,13 @@ The first level's maze is generated and stored by the function `generate_first_m
 ## General Software Architecture & Implementation
 ### General Software Architecture
 #### Initialization
+`pac-man.py` is the entry point: it parses the config file (`src/parsing/`), then creates and runs the `GameEngine` (`src/renderer/game_engine.py`), which builds every view once and shows the main menu.
+1. `main(conf_path)` calls `parser(conf_path)`, which loads/validates the config and the leaderboard.
+2. `GameEngine()` is created (an `arcade.Window` subclass) and loads the shared music tracks.
+3. `GameEngine.set_view()` instantiates every view listed below.
+4. `GameEngine.start_game()` shows the main menu and starts the Arcade event loop.
 
-#### Algorithm
+#### Algorithm (`src/engine/algo.py`)
 - Greddy
   - The Ghosts' algorithm
 - Personality(Enum)
@@ -154,41 +159,41 @@ The first level's maze is generated and stored by the function `generate_first_m
 - Mode(Enum)
   - Different states of the ghost
 
-#### Game
+#### Game (`src/engine/game.py`)
 - Cheats
   - States of a few implemented cheats, shared between the game view and the cheat menu
 
 #### Maze
-- Level
-  - Stock level's information like the height and the width
-- Maze
-  - Generates the visual for the maze
+- Level (`src/engine/level.py`)
+  - Stores level information (walls, corridors, spawns, pacgum/super-pacgum positions) derived from the generated maze grid
+- Maze (`src/renderer/in_game/maze.py`)
+  - Builds and draws the on-screen sprites for one level's maze
 
-#### Entities
-- Player
-- Enemies
-- Object
+#### Entities (`src/renderer/in_game/`)
+- Player (`characters.py`)
+- Enemies (`characters.py`)
+- Object (`sprite.py`)
   - Takes care of the pacgums and super-pacgums
 
-#### Manager
+#### Manager (`src/renderer/game_engine.py`)
 - GameEngine
   - Handles every view of the game and the game window
 
-#### Views
+#### Views (`src/renderer/`)
 Different views rendering every state of the game:
-- GameView
+- GameView (`game_mode.py`)
   - Handles the game progression
-- MenuView
+- MenuView (`ui/menu_screen.py`)
   - Shows the main game menu from which you can either: start the game, look at the instructions or the leaderboard or quit the game
-- InstructionsView
+- InstructionsView (`ui/instructions_screen.py`)
   - Shows the game's instructions
-- HighscoreView
+- HighscoreView (`ui/highscore_screen.py`)
   - Shows the name and scores registered inside `leaderboard.json`
-- PauseView
+- PauseView (`ui/pause_screen.py`)
   - Pause menu of the game
-- CheatView
+- CheatView (`ui/cheat_screen.py`)
   - Activate or deactivate different cheats
-- EndView
+- EndView (`ui/end_screen.py`)
   - Register the name and score of the player in `leaderboard.json`
 
 
