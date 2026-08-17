@@ -4,7 +4,7 @@ from typing import Any
 
 from mazegenerator import MazeGenerator
 
-from src.engine.game import Game, Rules, Cheats
+from src.engine.game import Cheats
 
 from src.renderer.ui.menu_screen import MenuView
 from src.renderer.ui.instructions_screen import InstructionsView
@@ -112,30 +112,27 @@ class GameEngine(arcade.Window):
         self.switch_menu()
         arcade.run()
 
-    def new_game(self, config: dict[str, Any],
-                 levels: list[dict[str, Any]]) -> Game:
-        """Generate the first maze and create the engine's ``Game`` state.
+    def generate_first_maze(self, config: dict[str, Any],
+                            levels: list[dict[str, Any]]
+                            ) -> list[list[int]]:
+        """Generate and store the first level's maze grid.
 
         Args:
             config: Parsed configuration dictionary.
             levels: List of per-level width/height/name dictionaries.
 
         Returns:
-            The newly created ``Game`` instance.
+            The generated wall-bitmask grid.
         """
         lvl_width: int = levels[0]["width"]
         lvl_height: int = levels[0]["height"]
         seed: int = config["seed"]
-        nb_levels = len(levels)
 
         self.first_maze: list[list[int]] = self.new_maze((lvl_width,
                                                           lvl_height),
                                                          seed)
 
-        self.game: Game = Game(Rules.from_conf(config),
-                               self.first_maze, nb_levels)
-
-        return self.game
+        return self.first_maze
 
     def new_maze(self, size: tuple[int, int],
                  seed: int = 0) -> list[list[int]]:

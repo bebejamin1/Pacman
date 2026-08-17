@@ -140,7 +140,7 @@ To display them, the rank, the name and the score are aligned from one line to a
 
 ## Maze Generation
 In the class `GameEngine`, the function `new_maze()` creates the game's levels that are used inside the class `Maze` to draw them.<br>
-The game is created with the function `new_game()` that defines the first maze and the number of expected levels.
+The first level's maze is generated and stored by the function `generate_first_maze()`, which the game view then loads into its first `Maze`.
 
 ## General Software Architecture & Implementation
 ### General Software Architecture
@@ -155,12 +155,8 @@ The game is created with the function `new_game()` that defines the first maze a
   - Different states of the ghost
 
 #### Game
-- Rules
-  - Defines the games' rules from `config.json`
 - Cheats
-  - States of a few implemented cheats
-- Game
-  - Creates a new game with every level's informations
+  - States of a few implemented cheats, shared between the game view and the cheat menu
 
 #### Maze
 - Level

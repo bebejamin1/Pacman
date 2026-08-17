@@ -41,9 +41,21 @@ def parse_conf(path: str) -> list[Any]:
 
         except FileNotFoundError:
             os.makedirs(path[:path.rfind("/")], exist_ok=True)
+            print("\n" + f"{r}[ERROR]{rs}: The configuration file "
+                  f"'{path}' was not found." + "\n")
+            print("A default configuration file has been created "
+                  f"at '{path}'.")
             with open(path, "w") as f:
                 json.dump(default_conf, f, indent=2)
                 conf = default_conf
+
+    except json.JSONDecodeError as e:
+        print("\n" + f"{r}[ERROR]{rs}: The configuration file "
+              f"contains invalid JSON ({e})." + "\n")
+        print("config.json has been changed to the default configuration")
+        with open(path, "w") as f:
+            json.dump(default_conf, f, indent=2)
+            conf = default_conf
 
     except Exception:
         print("\n" + f"{r}[ERROR]{rs}: The path to the config file "

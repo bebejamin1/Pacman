@@ -592,7 +592,7 @@ class GameView(arcade.View):
 
     def _maze_generation(self) -> None:
         """Generate the first level's maze and build its ``Maze`` view."""
-        self.game = self.window.new_game(self.config[1], self.lvl)
+        self.window.generate_first_maze(self.config[1], self.lvl)
 
         self.maze: Maze = Maze(self.config[1], self.window.first_maze,
                                self.lvl_nb, self.width, self.height)
