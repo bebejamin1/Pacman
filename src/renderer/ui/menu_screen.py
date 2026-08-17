@@ -47,19 +47,27 @@ class MenuView(arcade.View):
         if self.button == 0:
             self.click_exit.kill()
             self.click_start.kill()
+
         if self.button == 1:
-            self.button_list.append(self.click_start)
+            if self.click_start not in self.button_list:
+                self.button_list.append(self.click_start)
             self.click_inst.kill()
+
         if self.button == 2:
-            self.button_list.append(self.click_inst)
+            if self.click_inst not in self.button_list:
+                self.button_list.append(self.click_inst)
             self.click_start.kill()
             self.click_high.kill()
+
         if self.button == 3:
-            self.button_list.append(self.click_high)
+            if self.click_high not in self.button_list:
+                self.button_list.append(self.click_high)
             self.click_inst.kill()
             self.click_exit.kill()
+
         if self.button == 4:
-            self.button_list.append(self.click_exit)
+            if self.click_exit not in self.button_list:
+                self.button_list.append(self.click_exit)
             self.click_high.kill()
 
         if symbol == arcade.key.ENTER:
