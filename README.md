@@ -320,7 +320,7 @@ The Linux build is packaged with [PyInstaller](https://pyinstaller.org/), config
 
 </details>
 
-The game's page can be found [**here**](https://nomipi.itch.io/pac-man-42).
+The game's page can be found [**here**](https://nomipi.itch.io/pac-man-42). Access the page by using the code `42pac`.
 
 ## Resources
 ### Notions
