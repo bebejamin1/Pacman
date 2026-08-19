@@ -129,6 +129,8 @@ def parse_conf(path: str) -> list[Any]:
             json.dump(default_conf, f, indent=2)
         conf = default_conf
 
+    path_leaderbord = conf["highscore_filename"]
+
     return [path_leaderbord, conf]
 
 
@@ -197,7 +199,7 @@ def parse_leaderbord(path: str) -> dict[str, Any]:
                 raise ValueError("The score must be greater than 0 and must "
                                  "not exceed 2147483647.")
 
-    except (ValueError) as e:
+    except (ValueError, Exception) as e:
         print("\n" + f"{r}[ERROR]{rs}: {e}" + "\n")
         print("leaderboard.json has been replaced with an empty leaderboard\n")
         with open(path, "w") as f:
