@@ -30,6 +30,8 @@ def main(conf_path: str) -> None:
         from src.renderer.game_engine import GameEngine
     except ModuleNotFoundError as e:
         print("\n" + f"{r}[ERROR]{rs}: missing dependency ({e.name})." + "\n"
+              "You must have the mazegenerator-2.1.0-py3-none-any.whl package "
+              "in the src/maze folder" + "\n"
               "Run `make install` then `uv run python pac-man.py "
               "config.json`" + "\n")
         return

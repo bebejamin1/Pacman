@@ -1,7 +1,7 @@
 import os
 import arcade
 
-from src.parsing.parse_main import leaderboard_extract
+from src.parsing.parse_main import leaderboard_extract, leaderbord_path
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 PATH = "assets/background/"
 FONT_PATH = "assets/font/"
-LEAD_PATH = "data/leaderboard.json"
+LEAD_PATH = leaderbord_path
 
 
 class HighscoreView(arcade.View):

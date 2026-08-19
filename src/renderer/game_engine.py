@@ -2,7 +2,8 @@ import arcade
 
 from typing import Any
 
-from mazegenerator import MazeGenerator
+from ..maze.mazegenerator import mazegenerator
+
 
 from src.engine.game import Cheats
 
@@ -146,9 +147,11 @@ class GameEngine(arcade.Window):
         Returns:
             The generated wall-bitmask grid.
         """
-        maze: list[list[int]] = MazeGenerator(size=size,
-                                              perfect=False,
-                                              seed=seed).maze
+
+        maze: list[list[int]] = mazegenerator.MazeGenerator(size=size,
+                                                            perfect=False,
+                                                            seed=seed).maze
+
         return maze
 
     def play_music(self, music: arcade.Sound, loop: bool = False,

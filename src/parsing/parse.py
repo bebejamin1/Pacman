@@ -49,7 +49,7 @@ def parse_conf(path: str) -> list[Any]:
                 json.dump(default_conf, f, indent=2)
                 conf = default_conf
 
-    except json.JSONDecodeError as e:
+    except (json.JSONDecodeError, json.decoder.JSONDecodeError) as e:
         print("\n" + f"{r}[ERROR]{rs}: The configuration file "
               f"contains invalid JSON ({e})." + "\n")
         print("config.json has been changed to the default configuration")
@@ -150,7 +150,7 @@ def parse_leaderbord(path: str) -> dict[str, Any]:
                 leaderbord: dict[str, Any] = \
                     json.loads(strip_json_comments(f.read()))
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, json.decoder.JSONDecodeError, Exception):
         print("\n" + f"{r}[ERROR]{rs}: ", end="")
         print("The leaderboard was set up incorrectly ")
         print("leaderboard.json has been replaced with an empty leaderboard\n")
