@@ -293,6 +293,11 @@ class GameView(arcade.View):
         Args:
             delta_time: Elapsed time, in seconds, since the last tick.
         """
+        for ghost in (self.red, self.orange, self.cyan, self.pink):
+            if ghost.eaten:
+                ghost.center_x = -1000
+                ghost.center_y = -1000
+
         if self.cheats.freeze_ghosts:
             return
 
