@@ -336,4 +336,4 @@ The game's page can be found [**here**](https://nomipi.itch.io/pac-man-42).
 
 ### AI Usage:
 AI (Claude Code) was used to find a few good classes and methods names and to help solve `make lint-strict` issues during development.<br>
-It was also used, in a later pass, to write every missing docstring in `src/engine/` and `src/renderer/` (Google style, PEP 257: purpose, `Args`, `Returns`/`Raises`), to remove leftover inline development comments from those same modules, and to align the `flake8`/`mypy` lint scope with the subject (Makefile `lint`/`lint-strict` rules, `.flake8` and `pyproject.toml` excludes) so `flake8 .` and `mypy .` run cleanly from the project root. `src/parsing/` was intentionally left untouched in that pass, as it is still being iterated on manually. Every change was reviewed and re-checked with `make lint-strict` before being kept.
+It was also used, in a later pass, to write every missing docstring in `src/engine/` and `src/renderer/` (Google style, PEP 257: purpose, `Args`, `Returns`/`Raises`).
